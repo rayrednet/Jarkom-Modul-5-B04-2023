@@ -5,6 +5,43 @@
 | -------------------------------------|------------|
 | Rayssa Ravelia                       | 5025211219 |
 
+## Daftar Isi
+- [Soal](#soal) <br/>
+- [Jawaban](#jawab) <br/>
+    - [Jawaban Soal A](#jawaban-soal-a)
+    - [Jawaban Soal B](#jawaban-soal-b)
+    - [Jawaban Soal C](#jawaban-soal-c)
+    - [Jawaban Soal D](#jawaban-soal-d)
+    - [Jawaban Soal 1](#jawaban-soal-1)
+        - [Solusi](#11-solusi)
+        - [Testing](#12-testing)
+    - [Jawaban Soal 2](#jawaban-soal-2)
+        - [Solusi](#21-solusi)
+        - [Testing](#22-testing)
+    - [Jawaban Soal 3](#jawaban-soal-3)
+        - [Solusi](#31-solusi)
+        - [Testing](#32-testing)
+    - [Jawaban Soal 4](#jawaban-soal-4)
+        - [Solusi](#41-solusi)
+        - [Testing](#42-testing)
+    - [Jawaban Soal 5](#jawaban-soal-5)
+        - [Solusi](#51-solusi)
+        - [Testing](#52-testing)
+    - [Jawaban Soal 6](#jawaban-soal-6)
+        - [Solusi](#61-solusi)
+        - [Testing](#62-testing)
+    - [Jawaban Soal 7](#jawaban-soal-7)
+        - [Solusi](#71-solusi)
+        - [Testing](#72-testing)
+    - [Jawaban Soal 8](#jawaban-soal-8)
+        - [Solusi](#81-solusi)
+        - [Testing](#82-testing)
+    - [Jawaban Soal 9](#jawaban-soal-9)
+        - [Solusi](#91-solusi)
+        - [Testing](#92-testing)
+    - [Jawaban Soal 10](#jawaban-soal-10)
+        - [Solusi](#101-solusi)
+        - [Testing](#102-testing)
 
 ## Soal
 Setelah pandai mengatur jalur-jalur khusus, kalian diminta untuk membantu North Area menjaga wilayah mereka dan kalian dengan senang hati membantunya karena ini merupakan tugas terakhir. <br />
@@ -673,3 +710,39 @@ Berikut ini adalah hasil testing pada beberapa node:
 
 - Client <br />
     ![client](./img/1-client.png)
+
+### Jawaban Soal 2
+#### 2.1. Solusi 
+#### 2.2. Testing
+
+### Jawaban Soal 3
+#### 3.1. Solusi 
+#### 3.2. Testing
+
+### Jawaban Soal 4
+#### 4.1. Solusi 
+#### 4.2. Testing
+
+### Jawaban Soal 5
+#### 5.1. Solusi 
+#### 5.2. Testing
+
+### Jawaban Soal 6
+#### 6.1. Solusi 
+#### 6.2. Testing
+
+### Jawaban Soal 7
+#### 7.1. Solusi 
+#### 7.2. Testing
+
+### Jawaban Soal 8
+#### 8.1. Solusi 
+#### 8.2. Testing
+
+### Jawaban Soal 9
+#### 9.1. Solusi 
+#### 9.2. Testing
+
+### Jawaban Soal 10
+#### 10.1. Solusi 
+#### 10.2. Testing
