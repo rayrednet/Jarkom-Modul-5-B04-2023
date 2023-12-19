@@ -43,10 +43,14 @@ Agar silaturahmi tidak terputus, jangan lupa agar semua aturan iptables harus di
 
 ## Jawab
 ### Jawaban Soal A
+> Buatlah peta wilayah!
+
 Berikut ini adalah topologi yang telah dibuat sesuai dengan soal:
 ![topologi](./img/topologi.png)
 
 ### Jawaban Soal B
+> (B). Untuk menghitung rute-rute yang diperlukan, gunakan perhitungan dengan metode VLSM. Buat juga pohonnya, dan lingkari subnet yang dilewati.
+
 Untuk membagi IP menggunakan metode VLSM, kita harus menentukan subnet terlebih dahulu. Berikut ini adalah subnet yang telah saya tentukan:
 
 ![subnet](./img/subnet.png)
@@ -150,3 +154,287 @@ Adapun tabel IP VLSM berdasarkan urutan subnet sebagai berikut:
 Untuk konfigurasi IP addresses tersebut ke dalam GNS3, pertama-tama kita harus membuat topologi yang disertai dengan IP addresses untuk mempermudah konfigurasi. Berikut ini adalah topologi yang saya buat:
 
 ![ip-map](./img/ip-map.png)
+
+Berikut ini adalah tabel konfigurasi IP berdasarkan gambar di atas:
+
+*Tabel 5. Konfigurasi IP Addresses*
+
+| Node           | Subnet | Interface | IP Address | Netmask         | Gateway       |
+|----------------|--------|-----------|------------|-----------------|---------------|
+| Aura (Router)  | -      | eth0      | DHCP       | -               | -             |
+|                | A1     | eth1      | 192.180.14.129 | 255.255.255.252 | -             |
+|                | A4     | eth2      | 192.180.14.133| 255.255.255.252 | -             |
+| Heiter (Router)| A1    | eth0      | 192.180.14.130| 255.255.255.252 | 192.180.14.129  |
+|                | A2     | eth1      | 192.180.0.1   | 255.255.248.0   | -             |
+|                | A3    | eth2      | 192.180.8.1   | 255.255.252.0   | -             |
+| TurkRegion (1022 Hosts)     | A2     | eth0      | DHCP       | -               | -             |
+| Sein (Web Server)  | A3    | eth0      | 192.180.8.2   | 255.255.252.0   | 192.180.8.1     |
+| GrobeForest (512 Hosts)    | A3    | eth0      | DHCP       | -               | -             |
+| Frieren (Router)| A4    | eth0      |192.180.14.134| 255.255.255.252 | 192.180.14.133  |
+|                | A5     | eth1      | 192.180.14.137| 255.255.255.252 | -             |
+|                | A6     | eth2      | 192.180.14.141| 255.255.255.252 | -             |
+| Stark (Server) | A5     | eth0      | 192.180.14.138| 255.255.255.252 | 192.180.14.137  |
+| LaubHills (255 Hosts)| A10  | eth0      | DHCP       | -               | -             |
+| Himmel (Router)     | A6     | eth0      | 192.180.14.142| 255.255.255.252 | 192.180.14.141  |
+|                     | A7     | eth1      | 192.180.14.1  | 255.255.255.128   | -             |
+|                     | A10     | eth2      | 192.180.12.1  | 255.255.254.0 | -             |
+| Fern (Router)       | A7     | eth0      | 192.180.14.2  | 255.255.255.128 | 192.180.14.1    |
+|                     | A8     | eth1      | 192.180.14.145| 255.255.255.252 | -             |
+|                     | A9     | eth2      | 192.180.14.149| 255.255.255.252 | -             |
+| Richter (DNS Server)    | A9     | eth0      | 192.180.14.150| 255.255.255.252 | 192.180.14.149  |
+| SchwerMountains (64 Hosts) | A7 | eth0    | DHCP       | -               | -             |
+| Revolte (DHCP Server)    | A8     | eth0      | 192.180.14.146| 255.255.255.252 | 192.180.14.145  |
+
+
+Kemudian, lakukan konfigurasi IP sesuai dengan gambar di atas, `netmask` disesuaikan dengan nama subnet dan subnet masknya pada tabel 4. 
+
+Pada setiap `eth0` ditambahkan gateway untuk IP address tersebut, dan juga tambahkan `up echo nameserver 192.168.122.1 > /etc/resolv.conf` agar dapat terhubung ke NAT1. 
+
+Berikut ini adalah konfigurasi untuk setiap node yang saya lakukan:
+- Aura (Router)
+    ```
+    #NAT
+    auto eth0
+    iface eth0 inet dhcp
+
+    #A1
+    auto eth1
+    iface eth1 inet static
+        address 192.180.14.129
+        netmask 255.255.255.252
+
+    #A4
+    auto eth2
+    iface eth2 inet static
+        address 192.180.14.133
+        netmask 255.255.255.252
+    ```
+- Heiter (Router)
+    ```
+    #A1
+    auto eth0
+    iface eth0 inet static
+        address 192.180.14.130
+        netmask 255.255.255.252
+        gateway 192.180.14.129
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+
+    #A2
+    auto eth1
+    iface eth1 inet static
+        address 192.180.0.1
+        netmask 255.255.248.0
+
+    #A3
+    auto eth2
+    iface eth2 inet static
+        address 192.180.8.1
+        netmask 255.255.252.0
+    ```
+- TurkRegion (1022 Hosts)
+    ```
+    auto eth0
+    iface eth0 inet dhcp
+    ```
+- Sein (Web Server)
+    ```
+    #A3
+    auto eth0
+    iface eth0 inet static
+        address 192.180.8.2
+        netmask 255.255.252.0
+        gateway 192.180.8.1
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+    ```
+- GrobeForest (512 Hosts)
+    ```
+    auto eth0
+    iface eth0 inet dhcp
+    ```
+- Frieren 
+    ```
+    #A4
+    auto eth0
+    iface eth0 inet static
+        address 192.180.14.134
+        netmask 255.255.255.252
+        gateway 192.180.14.133
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+
+    #A5
+    auto eth1
+    iface eth1 inet static
+        address 192.180.14.137
+        netmask 255.255.255.252
+
+    #A6
+    auto eth2
+    iface eth2 inet static
+        address 192.180.14.141
+        netmask 255.255.255.252
+    ```
+- Stark (Web Server)
+    ```
+    #A5
+    auto eth0
+    iface eth0 inet static
+        address 192.180.14.138
+        netmask 255.255.255.252
+        gateway 192.180.14.137
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+    ```
+- Himmel
+    ```
+    #A6
+    auto eth0
+    iface eth0 inet static
+        address 192.180.14.142
+        netmask 255.255.255.252
+        gateway 192.180.14.141
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+
+    #A7
+    auto eth1
+    iface eth1 inet static
+        address 192.180.14.1
+        netmask 255.255.255.128
+
+    #A10
+    auto eth2
+    iface eth2 inet static
+        address 192.180.12.1
+        netmask 255.255.254.0
+    ```
+- LaubHills (255 Hosts)
+    ```
+    auto eth0
+    iface eth0 inet dhcp
+    ```
+- SchwerMountain (64 Hosts)
+    ```
+    auto eth0
+    iface eth0 inet dhcp
+    ```
+- Fern
+    ```
+    #A7
+    auto eth0
+    iface eth0 inet static
+        address 192.180.14.2
+        netmask 255.255.255.128
+        gateway 192.180.14.1
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+
+    #A8
+    auto eth1
+    iface eth1 inet static
+        address 192.180.14.145
+        netmask 255.255.255.252
+
+    #A9
+    auto eth2
+    iface eth2 inet static
+        address 192.180.14.149
+        netmask 255.255.255.252
+    ```
+- Richter (DNS Server)
+    ```
+    #A9
+    auto eth0
+    iface eth0 inet static
+        address 192.180.14.150
+        netmask 255.255.255.252
+        gateway 192.180.14.149
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+    ```
+- Revolte (DHCP Server)
+    ```
+    #A8
+    auto eth0
+    iface eth0 inet static
+        address 192.180.14.146
+        netmask 255.255.255.252
+        gateway 192.180.14.145
+    up echo nameserver 192.168.122.1 > /etc/resolv.conf
+    ```
+### Jawaban Soal C
+> (C). Kemudian buatlah rute sesuai dengan pembagian IP yang kalian lakukan. 
+
+Agar setiap node dapat terhubung satu sama lain, kita perlu melakukan routing IP pada implementasi IP yang sudah kita lakukan sebelumnya.
+
+Untuk melakukan routing pada GNS3, kita harus melihat dari setiap subnet masing-masing dan routernya. Jika subnet tersebut langsung berhubungan dengan router melalui kabel yang sama, maka kita tidak perlu melakukan routing pada router tersebut.
+
+Sebagai contoh untuk subnet A2 yang memiliki NID 192.180.0.0
+
+![GNS3 Guide](./img/ip-map.png)
+
+Subnet A2 tersebut berhubungan secara langsung dengan Router Heiter, maka kita tidak perlu melakukan konfigurasi routing pada Heiter. Tujuan routing adalah untuk menuju pusatnya, yaitu router Aura. Router Aura tidak berhubungan langsung dengan subnet A2, oleh karena itu kita perlu melakukan konfigurasi routing subnet A2 di router Aura.
+
+Konfigurasi tersebut disimpan di dalam *.bashrc*, dengan format sebagai berikut:
+
+```
+route add -net [Network ID] netmask [Netmask] gw [Gateway]
+```
+
+Kita ingin menambahkan rute subnet A2 di dalam Router Aura, maka Network ID yang dimasukkan adalah subnet A2, yaitu `192.180.0.0`. Subnet A2 memiliki netmask `255.255.248.0` . Untuk gateway, dilihat dari kabel router Aura yang paling dekat dengan subnet A2, yaitu `Heiter eth 0`, yang memiliki IP `192.180.14.130`
+
+Maka command untuk menambahkan subnet A2 di routing adalah:
+
+```
+route add -net 192.180.0.0 netmask 255.255.248.0 gw 192.180.14.130
+```
+
+Lakukan hal yang sama untuk subnet lainnya. Berikut ini adalah routing yang saya lakukan:
+- Aura 
+    ```
+    #Routing for Aura's eth1 paths
+    #A2
+    route add -net 192.180.0.0 netmask 255.255.248.0 gw 192.180.14.130
+
+    #A3
+    route add -net 192.180.8.0 netmask 255.255.252.0 gw 192.180.14.130
+
+    #Routing for Aura's eth2 paths
+    #A5
+    route add -net 192.180.14.136 netmask 255.255.255.252 gw 192.180.14.134
+
+    #A6
+    route add -net 192.180.14.140 netmask 255.255.255.252 gw 192.180.14.134
+
+    #A10
+    route add -net 192.180.12.0 netmask 255.255.254.0 gw 192.180.14.134
+
+    #A7
+    route add -net 192.180.14.0 netmask 255.255.255.128 gw 192.180.14.134
+
+    #A8
+    route add -net 192.180.14.144 netmask 255.255.255.252 gw 192.180.14.134
+
+    #A9
+    route add -net 192.180.14.148 netmask 255.255.255.252 gw 192.180.14.134
+    ```
+- Frieren
+    ```
+     #Routing for Frieren's eth2 paths
+    #A10
+    route add -net 192.180.12.0 netmask 255.255.254.0 gw 192.180.14.142
+
+    #A7
+    route add -net 192.180.14.0 netmask 255.255.255.128 gw 192.180.14.142
+
+    #A8
+    route add -net 192.180.14.144 netmask 255.255.255.252 gw 192.180.14.142
+
+    #A9
+    route add -net 192.180.14.148 netmask 255.255.255.252 gw 192.180.14.142
+    ```
+- Himmel
+    ```
+    #Routing for Himmel's eth1 paths
+    #A8
+    route add -net 192.180.14.144 netmask 255.255.255.252 gw 192.180.14.2
+
+    #A9
+    route add -net 192.180.14.148 netmask 255.255.255.252 gw 192.180.14.2
+    ```
+
