@@ -438,3 +438,238 @@ Lakukan hal yang sama untuk subnet lainnya. Berikut ini adalah routing yang saya
     route add -net 192.180.14.148 netmask 255.255.255.252 gw 192.180.14.2
     ```
 
+### Jawaban Soal D
+> (D). Tugas berikutnya adalah memberikan ip pada subnet SchwerMountain, LaubHills, TurkRegion, dan GrobeForest menggunakan bantuan DHCP.
+
+#### D.1. Mengunduh Dependencies
+Untuk mengatur IP DHCP pada Hosts, terdapat beberapa konfigurasi awal yang harus dilakukan pada beberapa node yang disimpan pada `.bashrc` untuk mengunduh dependencies. Berikut ini adalah konfigurasi yang dilakukan:
+1. Konfigurasi DHCP
+    ```
+    apt-get update -y
+    apt-get install isc-dhcp-server -y
+    ```
+
+    Konfigurasi di atas dilakukan pada node:
+    - DHCP Server: 
+        - Revolte
+    - DHCP Relay:
+        - Aura
+        - Heiter
+        - Frieren
+        - Himmel
+        - Fern
+    
+    Perintah `apt-get update -y` dan `apt-get install isc-dhcp-server -y` adalah bagian dari proses konfigurasi untuk menyiapkan sebuah server DHCP pada sistem operasi berbasis Linux. <br /> 
+    
+    Pertama, `apt-get update -y` digunakan untuk memperbarui daftar paket dan versi mereka yang tersedia. Ini memastikan bahwa sistem memiliki informasi terbaru tentang paket yang dapat diinstal atau diperbarui, termasuk keamanan dan pembaruan perangkat lunak penting. Kemudian, `apt-get install isc-dhcp-server -y` digunakan untuk menginstal paket `isc-dhcp-server`, yang merupakan implementasi server DHCP. Server DHCP (Dynamic Host Configuration Protocol) adalah server yang memberikan konfigurasi IP secara dinamis kepada klien di jaringan. <br />
+
+    Pada skenario ini, konfigurasi tersebut diaplikasikan pada node yang berfungsi sebagai DHCP Server dan DHCP Relay, dengan DHCP Relay berperan sebagai perantara yang meneruskan permintaan DHCP dari klien ke server.
+
+2. Konfigurasi DNS
+    ```
+    apt-get update
+    apt-get install install bind9 -y
+    ```
+    Konfigurasi di atas diterapka pada DNS Server, yaitu node Richter.
+
+    Perintah `apt-get update` diikuti oleh `apt-get install bind9 -y` merupakan tahapan konfigurasi untuk menyiapkan sebuah server DNS menggunakan BIND9 pada sistem operasi berbasis Linux. 
+    
+    Pertama, `apt-get update` digunakan untuk menyegarkan repositori paket sistem. Ini memastikan bahwa sistem memiliki informasi terbaru tentang semua paket yang tersedia, termasuk pembaruan keamanan dan perbaikan bug. Setelah repositori diperbarui, `apt-get install bind9 -y` digunakan untuk menginstal BIND9, yang merupakan salah satu perangkat lunak server DNS yang paling banyak digunakan. BIND9 (Berkeley Internet Name Domain version 9) memungkinkan server untuk menerjemahkan nama domain menjadi alamat IP, memfasilitasi penemuan sumber daya di internet. 
+    
+    Dalam konteks ini, kode tersebut digunakan untuk mengatur server DNS, yang bertanggung jawab atas penyelesaian nama domain dalam jaringan atau di internet.
+
+#### D.2. Konfigurasi pada root
+Setelah dependencies terunduh, terdapat beberapa konfigurasi lain yang harus dilakukan pada beberapa node yang disimpan pada `root`. Hal ini dikarenakan di dalam GNS3, program yang tersimpan di dalam `root` tidak akan hilang jika node tersebut di restart. Berikut ini adalah konfigurasi yang dilakukan:
+
+1. Konfigurasi DHCP
+    - DHCP Server
+
+        Revolte yang berperan sebagai DHCP Server memiliki konfigurasi sebagai berikut, yang saya simpan di dalam `/root/start.sh`:
+        ```
+        rm /var/run/dhcpd.pid
+
+        echo 'INTERFACESv4="eth0"' > /etc/default/isc-dhcp-server
+
+        echo '
+        #A1
+        subnet 192.180.14.128 netmask 255.255.255.252 {
+        }
+
+        #A2
+        subnet 192.180.0.0 netmask 255.255.248.0 {
+            range 192.180.0.2 192.180.7.254;
+                option routers 192.180.0.1;
+                option broadcast-address 192.180.7.255;
+                option domain-name-servers 192.180.14.150;
+                default-lease-time 3600;
+                max-lease-time 5760;
+        }
+
+        #A3
+        subnet 192.180.8.0 netmask 255.255.252.0 {
+            range 192.180.8.3 192.180.11.254;
+                option routers 192.180.8.1;
+                option broadcast-address 192.180.11.255;
+                option domain-name-servers 192.180.14.150;
+                default-lease-time 3600;
+                max-lease-time 5760;
+        }
+
+        #A4
+        subnet 192.180.14.132 netmask 255.255.255.252 {
+        }
+
+        #A5
+        subnet 192.180.14.136 netmask 255.255.255.252 {
+        }
+
+        #A6
+        subnet 192.180.14.140 netmask 255.255.255.252 {
+        }
+
+        #A7
+        subnet 192.180.14.0 netmask 255.255.255.128 {
+            range 192.180.14.3 192.180.14.126;
+                option routers 192.180.14.1;
+                option broadcast-address 192.180.14.127;
+                option domain-name-servers 192.180.14.150;
+                default-lease-time 3600;
+                max-lease-time 5760;
+        }
+
+        #A8
+        subnet 192.180.14.144 netmask 255.255.255.252 {
+        }
+
+        #A9
+        subnet 192.180.14.148 netmask 255.255.255.252 {
+        }
+
+        #A10
+        subnet 192.180.12.0 netmask 255.255.254.0 {
+            range 192.180.12.2 192.180.13.254;
+                option routers 192.180.12.1;
+                option broadcast-address 192.180.13.255;
+                option domain-name-servers 192.180.14.150;
+                default-lease-time 3600;
+                max-lease-time 5760;
+        }
+        ' > /etc/dhcp/dhcpd.conf
+
+        service isc-dhcp-server stop
+        service isc-dhcp-server start
+        ```
+        Konfigurasi ini mengatur Revolte sebagai DHCP Server. Pertama, file `dhcpd.pid` dihapus untuk menghilangkan proses ID dari sesi DHCP sebelumnya. Pengaturan `INTERFACESv4="eth0"` mendefinisikan antarmuka jaringan yang digunakan oleh server DHCP. 
+        
+        Berikutnya, konfigurasi untuk berbagai subnet ditetapkan dalam file `dhcpd.conf`. Ini termasuk pengaturan untuk alamat jaringan, masker subnet, rentang alamat IP yang dapat dialokasikan, gateway default, alamat broadcast, server DNS, dan waktu sewa IP. Beberapa subnet seperti 192.180.14.128 dan 192.180.14.132 hanya didefinisikan tanpa rentang alamat, menunjukkan mereka tidak mendistribusikan alamat IP. 
+        
+        Konfigurasi ini mencakup berbagai subnet dengan berbagai skema penugasan alamat. Setelah konfigurasi selesai, layanan `isc-dhcp-server` dihentikan dan kemudian dijalankan kembali untuk menerapkan perubahan. Ini memastikan server DHCP siap menangani permintaan dari klien di jaringan tersebut.
+    
+    - DHCP Relay <br />
+    Untuk DHCP Relay, konfigurasi ini dilakukan pada:
+        - Aura
+        - Heiter
+        - Frieren
+        - Himmel
+        - Fern
+    Berikut ini adalah konfigurasi yang dilakukan yang saya simpan di dalam `/root/start.sh`:
+        ```
+        echo '
+        SERVERS="192.180.14.146"
+        INTERFACES="eth0 eth1 eth2"
+        OPTIONS=
+        ' > /etc/default/isc-dhcp-relay
+
+        echo 'net.ipv4.ip_forward=1' > /etc/sysctl.conf
+
+        service isc-dhcp-relay restart
+        ```
+        Konfigurasi ini menyiapkan sebuah sistem sebagai DHCP Relay. Pertama, file `/etc/default/isc-dhcp-relay` diatur untuk mendefinisikan parameter utama DHCP Relay. `SERVERS="192.180.14.146"` menetapkan alamat IP server DHCP (Revolte) yang akan menerima permintaan DHCP dari relay. 
+        
+        `INTERFACES="eth0 eth1 eth2"` mendefinisikan antarmuka jaringan yang akan relay gunakan untuk mendengarkan dan meneruskan permintaan DHCP. `OPTIONS=` dibiarkan kosong, yang berarti tidak ada opsi tambahan yang ditetapkan. Selanjutnya, `echo 'net.ipv4.ip_forward=1' > /etc/sysctl.conf` mengaktifkan IP forwarding pada sistem, yang penting agar DHCP Relay dapat meneruskan paket antara jaringan yang berbeda.
+        
+        Akhirnya, `service isc-dhcp-relay restart` digunakan untuk memulai ulang layanan DHCP Relay dengan konfigurasi baru, memungkinkannya untuk mulai meneruskan permintaan DHCP dari klien ke server yang ditentukan. Konfigurasi ini penting dalam jaringan yang lebih besar di mana klien dan server DHCP tidak berada pada subnet yang sama.
+
+2. Konfigurasi DNS Server
+Untuk DNS Server (Richter), berikut ini adalah konfigurasi yang dilakukan yang saya simpan di dalam `/root/start.sh`:
+```
+ echo '
+ options {
+ 	directory "/var/cache/bind";
+ 	forwarders {
+ 		192.168.122.1;
+ 	};
+ 	// dnssec-validation auto;
+ 	allow-query{any;};
+ 	auth-nxdomain no;
+ 	listen-on-v6 { any; };
+ };
+ ' > /etc/bind/named.conf.options
+
+ service bind9 start
+```
+
+Konfigurasi ini digunakan untuk menyiapkan pengaturan DNS server dengan menggunakan BIND9 di Linux. Pertama, file `/etc/bind/named.conf.options` dimodifikasi untuk menentukan opsi konfigurasi utama. Dalam file ini, direktori cache disetel ke `/var/cache/bind`. 
+
+Forwarders diatur ke `192.168.122.1`, yang berarti bahwa permintaan DNS yang tidak dapat diselesaikan secara lokal akan diteruskan ke server DNS ini. Baris `// dnssec-validation auto;` dikomentari, yang berarti validasi DNSSEC tidak diaktifkan. `allow-query{any;}` mengizinkan semua klien untuk melakukan query ke server ini. `auth-nxdomain no` mengatur server untuk tidak memberi tanggapan otoritatif untuk domain yang tidak ada. `listen-on-v6 { any; }` mengizinkan server untuk mendengarkan permintaan pada IPv6. 
+
+Setelah file konfigurasi dimodifikasi, `service bind9 start` dijalankan untuk memulai layanan BIND9, menerapkan pengaturan baru dan memulai operasi sebagai DNS server. Konfigurasi ini penting untuk mengatur bagaimana server DNS menangani permintaan dan meneruskan query yang tidak dapat diselesaikan.
+
+#### D.3. Testing
+Untuk mengecek apakah DHCP berhasil pada SchwerMountain, LaubHills, TurkRegion, dan GrobeForest, berikut ini adalah langkah testing yang dilakukan:
+
+1. Kita perlu mengakses keluar terlebih dahulu untuk mengunduh dependencies, maka jalankan [jawaban nomor 1](#jawaban-soal-1) terlebih dahulu
+2. Lakukan `bash start.sh` pada node DHCP Relay, yaitu:
+    - Aura
+    - Heiter
+    - Frieren
+    - Himmel
+    - Fern
+3. Lakukan `bash start.sh` pada node DHCP Server (Revolte)
+4. Lakukan `bash start.sh` pada node DNS Server (Richter)
+5. Restart semua client
+6. Berikut ini adalah hasil IP yang diperoleh pada setiap client:
+    - SchwerMountain
+        ![schwer](./img/dhcp-schwer.png)
+
+    - LaubHills
+        ![laub](./img/dhcp-laub.png)
+
+    - TurkRegion
+        ![turk](./img/dhcp-turk.png)
+
+    - GrobeForest
+        ![grobe](./img/dhcp-grobe.png)
+
+### Jawaban Soal 1
+> Agar topologi yang kalian buat dapat mengakses keluar, kalian diminta untuk mengkonfigurasi Aura menggunakan iptables, tetapi tidak ingin menggunakan MASQUERADE.
+
+#### 1.1. Solusi 
+Lakukan perintah berikut di dalam node Aura:
+```
+ETH0_IP=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+```
+```
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source $ETH0_IP
+```
+
+Konfigurasi ini menggunakan `iptables` untuk melakukan Network Address Translation (NAT) pada sebuah router Linux tanpa menggunakan `MASQUERADE`. Pertama, variabel `ETH0_IP` diisi dengan alamat IP dari antarmuka `eth0`. Ini dilakukan dengan perintah `ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'`, yang mencari dan mengekstrak alamat IPv4 yang diassign ke `eth0`.
+
+Kemudian, `iptables` digunakan untuk menambahkan aturan NAT. Perintah `iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source $ETH0_IP` mengatur NAT pada tabel `nat`, di rantai `POSTROUTING`, yang berlaku untuk paket yang keluar melalui `eth0`. `-j SNAT --to-source $ETH0_IP` menentukan bahwa sumber alamat IP pada paket yang keluar akan diubah menjadi alamat IP dari `eth0`.
+
+Penggunaan `SNAT` (Source NAT) dengan alamat IP spesifik dibandingkan `MASQUERADE` memiliki keuntungan dalam hal efisiensi. `MASQUERADE` memeriksa alamat IP keluar setiap kali paket melewatinya, yang bisa menjadi mahal dalam hal pemrosesan jika alamat IP sering berubah. Namun, `SNAT` dengan alamat IP tetap lebih efisien karena transformasi dilakukan sekali saja. Ini cocok untuk skenario di mana alamat IP antarmuka tidak berubah sering, seperti pada router statis atau di lingkungan dengan alamat IP publik tetap.
+
+#### 1.2. Testing
+Untuk menjalankan testing, kita bisa melakukan perintah berikut pada node yang ingin diuji:
+```
+ping google.com
+```
+Berikut ini adalah hasil testing pada beberapa node:
+- Router (Heiter)
+    ![router](./img/1-router.png)
+
+- Server (Stark)
+    ![server](./img/1-server.png)
+
+- Client
+    ![client](./img/1-client.png)
