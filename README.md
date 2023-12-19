@@ -149,4 +149,4 @@ Adapun tabel IP VLSM berdasarkan urutan subnet sebagai berikut:
 
 Untuk konfigurasi IP addresses tersebut ke dalam GNS3, pertama-tama kita harus membuat topologi yang disertai dengan IP addresses untuk mempermudah konfigurasi. Berikut ini adalah topologi yang saya buat:
 
-
+![ip-map](./img/ip-map.png)
