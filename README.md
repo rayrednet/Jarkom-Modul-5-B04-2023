@@ -665,11 +665,11 @@ Untuk menjalankan testing, kita bisa melakukan perintah berikut pada node yang i
 ping google.com
 ```
 Berikut ini adalah hasil testing pada beberapa node:
-- Router (Heiter)
+- Router (Heiter) <br />
     ![router](./img/1-router.png)
 
-- Server (Stark)
+- Server (Stark) <br />
     ![server](./img/1-server.png)
 
-- Client
+- Client <br />
     ![client](./img/1-client.png)
