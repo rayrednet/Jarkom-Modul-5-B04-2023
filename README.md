@@ -712,37 +712,69 @@ Berikut ini adalah hasil testing pada beberapa node:
     ![client](./img/1-client.png)
 
 ### Jawaban Soal 2
-#### 2.1. Solusi 
+> Kalian diminta untuk melakukan drop semua TCP dan UDP kecuali port 8080 pada TCP.
+
+#### 2.1. Solusi
+Untuk soal ini, kita pertama harus melakukan install dependencies pada sender dan receiver yang ditentukan
+```
+apt install netcat
+```
+Kemudian jalankan perintah berikut pada receiver
+```
+ # Allow incoming TCP traffic on port 8080
+ iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+
+ # Drop all other incoming TCP traffic
+ iptables -A INPUT -p tcp -j DROP
+
+ # Drop all other incoming UDP traffic
+ iptables -A INPUT -p udp -j DROP
+ ```
+
 #### 2.2. Testing
+Untuk melakukan testing, saya akan mengetes pada Client TurkRegion sebagai receiver dan sender adalah Server Stark.
+
+Maka pada client TurkRegion dan Stark jalankan 
+```
+apt install netcat
+```
 
 ### Jawaban Soal 3
+> Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
 #### 3.1. Solusi 
 #### 3.2. Testing
 
 ### Jawaban Soal 4
+> Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.
 #### 4.1. Solusi 
 #### 4.2. Testing
 
 ### Jawaban Soal 5
+> Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
 #### 5.1. Solusi 
 #### 5.2. Testing
 
 ### Jawaban Soal 6
+> Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
 #### 6.1. Solusi 
 #### 6.2. Testing
 
 ### Jawaban Soal 7
+> Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
 #### 7.1. Solusi 
 #### 7.2. Testing
 
 ### Jawaban Soal 8
+> Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
 #### 8.1. Solusi 
 #### 8.2. Testing
 
 ### Jawaban Soal 9
+> Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir  alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. 
 #### 9.1. Solusi 
 #### 9.2. Testing
 
 ### Jawaban Soal 10
+> Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level. 
 #### 10.1. Solusi 
 #### 10.2. Testing
