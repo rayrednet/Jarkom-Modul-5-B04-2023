@@ -738,6 +738,45 @@ Maka pada client TurkRegion dan Stark jalankan
 ```
 apt install netcat
 ```
+Kemudian buka client DHCP dan cek IP yang dimiliki oleh client. Pada TurkRegion IPnya adalah 192.180.0.3:
+
+![ipclient](./img/2-ipClient.png)
+
+Selanjutnya jalankan perintah berikut pada TurkRegion:
+```
+ # Allow incoming TCP traffic on port 8080
+ iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+
+ # Drop all other incoming TCP traffic
+ iptables -A INPUT -p tcp -j DROP
+
+ # Drop all other incoming UDP traffic
+ iptables -A INPUT -p udp -j DROP
+ ```
+
+ Serta jalankan pada TurkRegion
+ ```
+ nc -l -p 8080
+ ```
+
+![runcmdTurkRegion](./img/2-runTurkRegion.png)
+
+Pada Stark, jalankan perintah
+ ```
+  nc <ip receiver> 8080
+ ```
+
+
+ ![Alt text](image.png)
+
+![Alt text](image-2.png)
+
+![Alt text](image-3.png)
+Jalankan perintah "nmap -sU -p 67  IP-DHCP" dan "nmap -sU -p 8080  IP-DHCP". Ubah IP DHCP dengan IP TurkRegion,sehingga diperoleh sebagai berikut:
+
+![nmap](./img/2-nmap1.png)
+
+![nmap](./img/2-nmap2.png)
 
 ### Jawaban Soal 3
 > Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
