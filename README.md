@@ -742,7 +742,7 @@ Kemudian buka client DHCP dan cek IP yang dimiliki oleh client. Pada TurkRegion 
 
 ![ipclient](./img/2-ipClient.png)
 
-Selanjutnya jalankan perintah berikut pada TurkRegion:
+Selanjutnya jalankan perintah berikut pada TurkRegion (receiver):
 ```
  # Allow incoming TCP traffic on port 8080
  iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
@@ -754,25 +754,33 @@ Selanjutnya jalankan perintah berikut pada TurkRegion:
  iptables -A INPUT -p udp -j DROP
  ```
 
- Serta jalankan pada TurkRegion
+ Serta jalankan pada TurkRegion (receiver)
  ```
  nc -l -p 8080
  ```
 
 ![runcmdTurkRegion](./img/2-runTurkRegion.png)
 
-Pada Stark, jalankan perintah
+Pada Stark (sender), jalankan perintah
  ```
   nc <ip receiver> 8080
  ```
+Kemudian pada Stark (Sender), kita dapat mengisi pesan yang akan dikirim ke TurkRegion (receiver), sebagai contoh sebagai berikut:
 
+![sender](./img/2-sender.png)
 
- ![Alt text](image.png)
+Selanjutnya pada TurkRegion (Receiver), kita dapat melihat pesan yang dikirim oleh Stark (sender), sebagai berikut:
 
-![Alt text](image-2.png)
+ ![receiver](./img/2-receiver.png)
 
-![Alt text](image-3.png)
-Jalankan perintah "nmap -sU -p 67  IP-DHCP" dan "nmap -sU -p 8080  IP-DHCP". Ubah IP DHCP dengan IP TurkRegion,sehingga diperoleh sebagai berikut:
+Setelah itu, jalankan perintah 
+ ```
+nmap -sU -p 67  IP-DHCP
+ ```
+ ```
+nmap -sU -p 8080  IP-DHCP
+ ```
+Ubah IP DHCP dengan IP TurkRegion,sehingga diperoleh sebagai berikut:
 
 ![nmap](./img/2-nmap1.png)
 
@@ -781,22 +789,185 @@ Jalankan perintah "nmap -sU -p 67  IP-DHCP" dan "nmap -sU -p 8080  IP-DHCP". Uba
 ### Jawaban Soal 3
 > Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
 #### 3.1. Solusi 
+Jalankan perintah berikut pada DHCP Server (Revolte) dan DNS Server (Richter)
+```
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+ ```
+```
+iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
+ ```
 #### 3.2. Testing
+Untuk testing, lakukan ping ke IP Revolte (DHCP Server) atau IP Richter (DNS Server) ke-4 node yang berbeda, untuk memastikan bahwa hanya maksimal 3 device yang dapat mengakses secara bersamaan.
+
+Sebagai contoh, saya akan melakukan ping ke IP Revolte (DHCP Server) dengan IP 192.180.14.146 ke beberapa node berikut:
+1. GrobeForest (Client)
+    
+    ![client](./img/3-client.png)
+
+2. Sein (Web Server)
+    ![server](./img/3-server.png)
+
+3. Himmel (Router)
+    ![router](./img/3-router.png)
+
+4. LaubHills (client)
+    ![client](./img/3-client2.png)
+
+Dapat dilihat bahwa pada node keempat (LaubHills), paket tidak dapat diterima, sedangkan pada ketiga node lainnya paket tetap berjalan.
 
 ### Jawaban Soal 4
 > Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.
 #### 4.1. Solusi 
+
+Untuk melakukan pembatasan akses ke layanan SSH pada server web hanya untuk jaringan tertentu, seperti "GrobeForest", kita hanya perlu menetapkan aturan pada chain INPUT. Chain INPUT mengontrol lalu lintas masuk ke server, yang termasuk permintaan koneksi SSH. Jadi, kita akan membatasi akses ke port SSH (biasanya port 22) berdasarkan alamat IP atau rentang alamat IP yang diizinkan dari jaringan "GrobeForest".
+
+Untuk melakukan pembatasan ini, kita harus melihat subnet pada node GrobeForest.
+![subnet](./img/ip-map.png)
+
+Berdasarkan map di atas, GrobeForest berada di dalam subnet A3 yang memiliki NID 192.180.8.0. Maka kita harus menjalankan kode berikut pada web server:
+```
+iptables -A INPUT -p tcp --dport 22 -s 192.180.8.0/22 -j ACCEPT
+```
+
+```
+iptables -A INPUT -p tcp --dport 22 -j REJECT
+```
+
 #### 4.2. Testing
+Berdasarkan topologi, terdapat 2 web server, yaitu Sein (subnet A3) dan Stark (subnet A5). Sebagai contoh, dilakukan testing pada node Stark, maka kita menjalankan perintah:
+```
+iptables -A INPUT -p tcp --dport 22 -s 192.180.8.0/22 -j ACCEPT
+```
+
+```
+iptables -A INPUT -p tcp --dport 22 -j REJECT
+```
+![run](./img/4-run.png)
+
+Kemudian jalankan perintah
+```
+iptables -L
+```
+Diperoleh hasil sebagai berikut:
+
+![result](./img/4-result.png)
+
+Perintah iptables -L, bertujuan utnuk menampilkan daftar aturan yang saat ini aktif dalam firewall. Berikut ini adalah penjelasan dari output tersebut:
+- Chain INPUT (policy DROP) <br />
+    Ini adalah default policy untuk chain INPUT, yang berarti semua lalu lintas masuk akan ditolak kecuali jika ada aturan yang secara eksplisit mengizinkannya. <br />
+    Terdapat 2 hasil dalam bagian ini, yaitu:
+    - ACCEPT tcp -- 192.180.0.0/22 anywhere tcp dpt:ssh <br />
+    Aturan ini mengizinkan lalu lintas masuk pada port 22 (SSH) dari alamat IP dalam rentang 192.180.0.0/22 (subnet A3). Aturan ini memungkinkan koneksi SSH hanya dari alamat IP dalam subnet yang ditentukan.
+    - REJECT tcp -- anywhere anywhere tcp dpt:ssh reject-with icmp-port-unreachable <br />
+     Aturan ini menolak semua lalu lintas TCP lainnya yang ditujukan ke port 22 (SSH). Koneksi yang ditolak akan dijawab dengan pesan ICMP "port unreachable". Aturan ini menjamin bahwa upaya untuk melakukan koneksi SSH dari alamat IP di luar rentang 192.180.0.0/22 akan ditolak.
+- Chain FORWARD (policy ACCEPT) <br />
+    Chain ini mengontrol paket yang sedang diteruskan melalui server. Kebijakan bawaan adalah "ACCEPT", yang berarti semua paket yang diteruskan diizinkan kecuali ada aturan yang secara eksplisit melarangnya.
+
+- Chain OUTPUT (policy ACCEPT) <br />
+    Ini mengontrol paket yang keluar dari server. Kebijakan bawaan adalah "ACCEPT", yang memungkinkan semua paket keluar kecuali ada aturan yang secara eksplisit melarangnya.
+
 
 ### Jawaban Soal 5
 > Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
 #### 5.1. Solusi 
+Untuk melakukan pembatasan akses webserver berdasarkan jam tertentu, kita harus menjalankan perintah berikut pada WebServer:
+```
+iptables -A INPUT -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri -j ACCEPT
+```
+```
+iptables -A INPUT -j REJECT
+```
+
 #### 5.2. Testing
+Sebagai contoh, saya melakukan testing pada webServer Sein, sehingga kita menjalankan:
+```
+iptables -A INPUT -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri -j ACCEPT
+```
+```
+iptables -A INPUT -j REJECT
+```
+![run](./img/5-run.png)
+
+Kemudian kita lakukan testing pada node lain, misalnya pada Client SchewerMountain. Kita akan melakukan 2 skenario testing, sebagai berikut:
+- Testing pada di dalam jam kerja <br />
+    Sebagai contoh kita melakukan testing pada Senin 09:00, maka pada client kita set sebagai berikut:
+    ```
+    date --set="2023-12-11 09:00:00"
+    ```
+    ![date1](./img/5-date.png)
+
+    Kemudian lakukan ping ke node webserver yang telah dikonfigurasi, yaitu Sein pada client. Sein memiliki IP 192.180.8.2.
+
+    ![result1](./img/5-result0.png)
+
+    Dapat dilihat bahwa ping berhasil dilakukan pada jam kerja
+
+- Testing pada di luar jam kerja <br />
+    Sebagai contoh kita melakukan testing pada hari Sabtu, maka pada client kita set sebagai berikut:
+    ```
+    date --set="2023-12-16"
+    ```
+    ![date2](./img/5-result1.png)
+
+    Kemudian lakukan ping ke node webserver yang telah dikonfigurasi, yaitu Sein pada client. Sein memiliki IP 192.180.8.2.
+
+    ![result2](./img/5-result2.png)
+
+    Dapat dilihat bahwa ping tidak berhasil dilakukan pada saat diluar jam kerja.
 
 ### Jawaban Soal 6
-> Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
+> Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand-by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
 #### 6.1. Solusi 
+Pada webserver, lakukan perintah berikut:
+```
+iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT
+```
+```
+iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT
+```
 #### 6.2. Testing
+Sebagai contoh, saya melakukan testing pada webServer Sein, sehingga kita menjalankan:
+```
+iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT
+```
+```
+iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT
+```
+![run](./img/6-run.png)
+
+Kemudian kita lakukan testing pada node lain, misalnya pada Client GrobeForest. Kita akan melakukan 5 skenario testing, sebagai berikut:
+- Testing <br />
+Senin jam 09.30 
+bisa
+    ```
+    date --set="2023-12-11 09:30:00"
+    ```
+    ![date1](./img/6-date1.png)
+
+    ![test1](./img/6-test1.png)
+
+- Testing <br />
+Senin jam 12.30 
+gabisa
+
+    ```
+    date --set="2023-12-11 12:30:00"
+    ```
+
+    ![date2](./img/6-date2.png)
+
+
+- Testing <br />
+Jumat jam 12.00 
+gabisa
+
+- Testing <br />
+Jumat jam 13.02 
+bisa
+
+- Testing <br />
+Sabtu jam 23.00 
+gabisa
 
 ### Jawaban Soal 7
 > Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
