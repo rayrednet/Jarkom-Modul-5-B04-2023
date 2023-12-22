@@ -926,7 +926,7 @@ iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,
 iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT
 ```
 #### 6.2. Testing
-Sebagai contoh, saya melakukan testing pada webServer Sein, sehingga kita menjalankan:
+Karena soal nomor 6 berhubungan dengan soal nomor 5, saya melakukan testing pada webServer Sein, sehingga kita menjalankan:
 ```
 iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT
 ```
@@ -935,7 +935,7 @@ iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j R
 ```
 ![run](./img/6-run.png)
 
-Kemudian kita lakukan testing pada node lain, misalnya pada Client GrobeForest. Kita akan melakukan 5 skenario testing, sebagai berikut:
+Kemudian kita lakukan testing pada node lain, misalnya pada Client LaubHills. Kita akan melakukan 5 skenario testing, sebagai berikut:
 - Testing <br />
 Senin jam 09.30 
 bisa
@@ -943,6 +943,8 @@ bisa
     date --set="2023-12-11 09:30:00"
     ```
     ![date1](./img/6-date1.png)
+
+    Kemudian lakukan ping ke node webserver yang telah dikonfigurasi, yaitu Sein pada client. Sein memiliki IP 192.180.8.2.
 
     ![test1](./img/6-test1.png)
 
@@ -956,23 +958,83 @@ gabisa
 
     ![date2](./img/6-date2.png)
 
+    ![test2](./img/6-test2.png)
+
 
 - Testing <br />
 Jumat jam 12.00 
 gabisa
+    ```
+    date --set="2023-12-15 12:00:00"
+    ```
+    ![date3](./img/6-date3.png)
+
+    ![test3](./img/6-test3.png)
 
 - Testing <br />
 Jumat jam 13.02 
 bisa
+  ```
+    date --set="2023-12-15 13:02:00"
+    ```
+![date4](./img/6-date4.png)
+
+![test4](./img/6-test4.png)
 
 - Testing <br />
 Sabtu jam 23.00 
 gabisa
+  ```
+    date --set="2023-12-16 23:00:00"
+    ```
+
+    ![date5](./img/6-date5.png)
+
+    ![test5](./img/6-test5.png)
 
 ### Jawaban Soal 7
 > Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
 #### 7.1. Solusi 
+Sein -> 80
+Stark -> 443
+
+Jalankan pada router yang menghubungkan kedua webserver
+ ```
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.180.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.180.8.2
+
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.180.8.2 -j DNAT --to-destination 192.180.14.138
+
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.180.14.138 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.180.14.138
+
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.180.14.138 -j DNAT --to-destination 192.180.8.2
+ ```
+
 #### 7.2. Testing
+Misal jalankan pada Heiter
+![run](./img/7-run.png)
+
+Jalankan iptables -t nat -L PREROUTING --line-numbers -v di heiter
+![iptables](./img/7-iptables.png)
+
+- Untuk port 80 (sein)
+    - di sein
+    while true; do nc -l -p 80 -c 'echo "it's sein"'; done
+    
+    - di stark
+        while true; do nc -l -p 80 -c 'echo "it's stark"'; done
+
+    - di client (Turk Region)
+    nc 192.180.8.2 80
+
+- Untuk port 443 (stark)
+    - di sein
+    while true; do nc -l -p 443 -c 'echo "it's sein"'; done
+    
+    - di stark
+        while true; do nc -l -p 443 -c 'echo "it's stark"'; done
+
+    - di client (Turk Region)
+    nc 192.180.14.138
 
 ### Jawaban Soal 8
 > Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
