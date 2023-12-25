@@ -81,13 +81,13 @@ Agar silaturahmi tidak terputus, jangan lupa agar semua aturan iptables harus di
 ## Jawab
 Adapun link demo untuk modul ini yang tertera pada [link demo](https://youtu.be/PYD5S4X7XQA?si=X8M82o8xl2DTpt53)
 
-### Jawaban Soal A
+### ⭐ Jawaban Soal A
 > Buatlah peta wilayah!
 
 Berikut ini adalah topologi yang telah dibuat sesuai dengan soal:
 ![topologi](./img/topologi.png)
 
-### Jawaban Soal B
+### ⭐ Jawaban Soal B
 > (B). Untuk menghitung rute-rute yang diperlukan, gunakan perhitungan dengan metode VLSM. Buat juga pohonnya, dan lingkari subnet yang dilewati.
 
 Untuk membagi IP menggunakan metode VLSM, kita harus menentukan subnet terlebih dahulu. Berikut ini adalah subnet yang telah saya tentukan:
@@ -396,7 +396,7 @@ Berikut ini adalah konfigurasi untuk setiap node yang saya lakukan:
         gateway 192.180.14.145
     up echo nameserver 192.168.122.1 > /etc/resolv.conf
     ```
-### Jawaban Soal C
+### ⭐ Jawaban Soal C
 > (C). Kemudian buatlah rute sesuai dengan pembagian IP yang kalian lakukan. 
 
 Agar setiap node dapat terhubung satu sama lain, kita perlu melakukan routing IP pada implementasi IP yang sudah kita lakukan sebelumnya.
@@ -477,7 +477,7 @@ Lakukan hal yang sama untuk subnet lainnya. Berikut ini adalah routing yang saya
     route add -net 192.180.14.148 netmask 255.255.255.252 gw 192.180.14.2
     ```
 
-### Jawaban Soal D
+### ⭐  Jawaban Soal D
 > (D). Tugas berikutnya adalah memberikan ip pada subnet SchwerMountain, LaubHills, TurkRegion, dan GrobeForest menggunakan bantuan DHCP.
 
 #### D.1. Mengunduh Dependencies
@@ -680,7 +680,7 @@ Untuk mengecek apakah DHCP berhasil pada SchwerMountain, LaubHills, TurkRegion, 
     - GrobeForest
         ![grobe](./img/dhcp-grobe.png)
 
-### Jawaban Soal 1
+### ⭐ Jawaban Soal 1
 > Agar topologi yang kalian buat dapat mengakses keluar, kalian diminta untuk mengkonfigurasi Aura menggunakan iptables, tetapi tidak ingin menggunakan MASQUERADE.
 
 #### 1.1. Solusi 
@@ -713,7 +713,7 @@ Berikut ini adalah hasil testing pada beberapa node:
 - Client <br />
     ![client](./img/1-client.png)
 
-### Jawaban Soal 2
+### ⭐  Jawaban Soal 2
 > Kalian diminta untuk melakukan drop semua TCP dan UDP kecuali port 8080 pada TCP.
 
 #### 2.1. Solusi
@@ -814,7 +814,7 @@ Berikut ini adalah hasil testing untuk nmap `-sU -p 8080  IP-DHCP`
 
 Dalam output Nmap tersebut, port 8080 pada host dengan alamat IP 192.180.0.3 telah dipindai menggunakan protokol UDP. Hasilnya menunjukkan bahwa port ini dalam keadaan `open|filtered` yang berarti Nmap tidak bisa menentukan dengan pasti apakah port tersebut terbuka atau difilter oleh firewall karena tidak ada respon untuk paket UDP yang dikirim. Tidak ada layanan yang dikenali terkait dengan port ini, sehingga ditandai sebagai "unknown". Host tersebut aktif, dan pemindaian selesai dalam waktu 13.66 detik.
 
-### Jawaban Soal 3
+### ⭐ Jawaban Soal 3
 > Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
 #### 3.1. Solusi 
 Jalankan perintah berikut pada DHCP Server (Revolte) dan DNS Server (Richter)
@@ -869,7 +869,7 @@ Selanjutnya saya akan melakukan ping ke IP Richter (DNS Server) dengan IP 192.18
 
 Dapat dilihat bahwa pada node keempat (LaubHills), paket tidak dapat diterima, sedangkan pada ketiga node lainnya paket tetap berjalan.
 
-### Jawaban Soal 4
+### ⭐ Jawaban Soal 4
 > Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.
 #### 4.1. Solusi 
 
@@ -933,7 +933,7 @@ Selanjutnya kita akan melakukan testing di Sein (subnet A3), diperoleh hasil seb
 
 Dapat dilihat bahwa diperoleh hasil yang sama seperti pada iptables -L pada server Stark.
 
-### Jawaban Soal 5
+### ⭐ Jawaban Soal 5
 > Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
 #### 5.1. Solusi 
 Untuk melakukan pembatasan akses webserver berdasarkan jam tertentu, kita harus menjalankan perintah berikut pada WebServer:
@@ -994,7 +994,7 @@ Kemudian kita lakukan testing pada node lain, misalnya pada Client SchewerMounta
 
     Dapat dilihat bahwa ping tidak berhasil dilakukan pada saat diluar jam kerja.
 
-### Jawaban Soal 6
+### ⭐ Jawaban Soal 6
 > Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand-by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
 #### 6.1. Solusi 
 Pada webserver, lakukan perintah berikut:
@@ -1107,7 +1107,7 @@ Kemudian kita lakukan testing pada node lain. Kita akan melakukan 5 skenario tes
     
     Dapat dilihat bahwa kedua server tidak dapat diakses pada diluar jam kerja.
 
-### Jawaban Soal 7
+### ⭐ Jawaban Soal 7
 > Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
 #### 7.1. Solusi 
 Sebelum memulai kita harus melakukan instalisasi pada semua node yang bersangkutan, karena akan digunakan untuk testing.
@@ -1215,7 +1215,7 @@ Selanjutnya untuk testing, kita akan menjalankan 2 skenario, sebagai berikut:
     ![result443](./img/7-result443.png) <br />
     Dapat dilihat diperoleh hasil yang bergantian antara sein dan stark saat melakukan ping ke IP Stark melalui port 443. 
 
-### Jawaban Soal 8
+### ⭐ Jawaban Soal 8
 > Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
 #### 8.1. Solusi 
 Masa pemilu Indonesia 2024 diadakan pada 14 Februari 2024 - 26 Juni 2024.
@@ -1314,7 +1314,7 @@ Untuk skenario testing akan dijalankan sebagai berikut:
     - ping ke stark
         ![stark](./img/8-test4-stark.png)
     Dari kedua hasil tersebut, dapat dilihat bahwa node GrobeForest yang berada di luar subnet A8, dapat megnakses webserver pada masa pemilu berlangsung.
-### Jawaban Soal 9
+### ⭐ Jawaban Soal 9
 > Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir  alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. (clue: test dengan nmap)
 #### 9.1. Solusi 
 Untuk melakukan pemblokiran alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit, kita dapat menggunakan kode berikut, yang diterapkan pada webserver (sein dan stark):
@@ -1390,7 +1390,7 @@ Dari kedua hasil  iptables -L tersebut dapat terlihat terdapat aturan untuk mela
 <br />
         Scan Nmap berhasil mendeteksi host 192.180.14.138 (stark). Namun, semua port yang dipindai (1-30) terfilter. Hal ini kemungkinan disebabkan oleh firewall atau perangkat keamanan lainnya.
 
-### Jawaban Soal 10
+### ⭐ Jawaban Soal 10
 > Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level. 
 #### 10.1. Solusi 
 Untuk soal ini, kita akan melakukan konfigurasi disetiap node server dan router, yakni pada node:
@@ -1462,34 +1462,41 @@ Intinya, skrip ini digunakan untuk mencatat semua aktivitas jaringan yang diangg
 Untuk skenario testing akan dijalankan skenario sebagai berikut:
 - Mengakses web server di luar jam kerja <br />
     Jam kerja adalah pada Senin-Jumat pada pukul 08.00-16.00. Sebagai contoh, saya akan melakukan testing ping ke node Sein dari client GrobeForest. Misalnya saya melakukan set hari pada Sabtu, diperoleh hasil sebagai berikut:
-    ![scene 1](./img/10-result1.png)
+  <br />
+    ![scene 1](./img/10-result1.png)  <br />
     Dari hasil tersebut terlihat bahwa ping tidak dapat berjalan karena dilakukan pengaksesan di luar jam kerja.
-    - iptables -L
-        ![iptables](./img/10-iptables1.png)
+    - iptables -L <br />
+        ![iptables](./img/10-iptables1.png) <br />
         Dapat dilihat bahwa pada iptables terdapat aturan yang mengatur untuk akses di luar jam kerja, dan juga aturan untuk logging.
     - file log <br />
-        Untuk file log, saya akan menunjukkan hasil pada /var/log/syslog dan /var/log/iptables.log. Berikut ini adalah hasil /var/log/syslog:
-        ![syslog](./img/10-s1-log1.png)
+        Untuk file log, saya akan menunjukkan hasil pada /var/log/syslog dan /var/log/iptables.log. Berikut ini adalah hasil /var/log/syslog: <br />
+        ![syslog](./img/10-s1-log1.png) <br />
         Berikut ini adalah hasil /var/log/iptables.log: <br />
         ![iptables.log](./img/10-s1-log2.png) <br />
         Dari kedua hasil log tersebut dapat dilihat bahwa tidak terdapat log untuk DROP. Hal ini mungkin dikarenakan pada image Docker yang digunakan (ubuntu), tidak memiliki `syslog.conf`, sehingga sulit untuk mengatur log.
 - Melakukan ping dengan 3 atau lebih client ke dns/dhcp server <br /> 
     Untuk contoh skenario yang ini, saya akan menjalankan ping ke node Revolte melalui 4 node lain yang berbeda. Berikut ini adalah hasil pingnya:
-    1. node pertama (SchwerMountain)
+    1. node pertama (SchwerMountain) <br />
         ![1](./img/10-r2.png)
-    2. node kedua (LaubHills)
+       <br />
+    3. node kedua (LaubHills) <br />
         ![2](./img/10-R3.png)
-    3. node ketiga (Stark)
+       <br />
+    5. node ketiga (Stark) <br />
         ![3](./img/10-r4.png)
-    4. node keempat (GrobeForest)
+       <br />
+    7. node keempat (GrobeForest) <br />
         ![4](./img/10-r5.png)
+<br />
     Pada node keempat dapat dilihat bahwa ping ke Revolte tidak dapat dilakukan karena maksimal node ping bersamaan adalah 3.
     - iptables -L
     ![iptables2](./img/10-iptables2.png) <br />
+    <br />
     Dapat dilihat bahwa pada iptables terdapat aturan yang mengatur untuk ping lebih dari 3 client  , dan juga aturan untuk logging.
     - file log <br />
         Untuk file log, saya akan menunjukkan hasil pada /var/log/syslog dan /var/log/iptables.log. Berikut ini adalah hasil /var/log/syslog:
         ![syslog](./img/10-logs2v1.png) <br />
+        <br />
         Berikut ini adalah hasil /var/log/iptables.log: <br />
         ![iptables.log](./img/10-log2v2.png) <br />
         Dari kedua hasil log tersebut dapat dilihat bahwa tidak terdapat log untuk DROP. Hal ini mungkin dikarenakan pada image Docker yang digunakan (ubuntu), tidak memiliki `syslog.conf`, sehingga sulit untuk mengatur log.
