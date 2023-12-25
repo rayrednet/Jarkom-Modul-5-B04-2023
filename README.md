@@ -79,6 +79,8 @@ Soal:
 Agar silaturahmi tidak terputus, jangan lupa agar semua aturan iptables harus disimpan pada sistem atau paling tidak kalian menyediakan script sebagai backup.
 
 ## Jawab
+Adapun link demo untuk modul ini yang tertera pada [link demo](https://youtu.be/PYD5S4X7XQA?si=X8M82o8xl2DTpt53)
+
 ### Jawaban Soal A
 > Buatlah peta wilayah!
 
@@ -719,6 +721,9 @@ Untuk soal ini, kita pertama harus melakukan install dependencies pada sender da
 ```
 apt install netcat
 ```
+
+Perintah `apt install netcat` menginstal Netcat, sebuah utilitas jaringan yang memungkinkan interaksi dengan protokol TCP dan UDP. Dengan Netcat, pengguna dapat membuka koneksi TCP/UDP, mendengarkan pada port tertentu, dan mengirim serta menerima data melalui jaringan. Ini sangat berguna untuk berbagai tugas jaringan seperti pemindaian port, diagnostik, dan debugging komunikasi jaringan. Fitur TCP memungkinkan untuk pembuatan koneksi yang handal dan berurutan, sedangkan UDP berguna untuk pengiriman paket yang lebih ringan tanpa memerlukan koneksi. Kedua mode ini menjadikan Netcat alat yang sangat fleksibel dan penting untuk administrasi jaringan dan kegiatan pengujian keamanan.
+
 Kemudian jalankan perintah berikut pada receiver
 ```
  # Allow incoming TCP traffic on port 8080
@@ -761,7 +766,13 @@ Selanjutnya jalankan perintah berikut pada TurkRegion (receiver):
 
 ![runcmdTurkRegion](./img/2-runTurkRegion.png)
 
-Pada Stark (sender), jalankan perintah
+
+Perintah `nc -l -p 8080` menggunakan Netcat untuk membuat sebuah server sederhana yang mendengarkan pada port 8080. <br />
+`nc`: Ini adalah panggilan untuk Netcat, alat yang digunakan untuk bekerja dengan jaringan. <br />
+`-l`: Opsi ini memberitahu Netcat untuk beroperasi dalam mode "listen" atau mendengarkan. Dalam mode ini, Netcat menunggu koneksi masuk daripada menginisiasi koneksi keluar.<br />
+`-p 8080`: Opsi ini menetapkan port yang akan didengarkan oleh Netcat. Dalam hal ini, portnya adalah 8080. <br />
+
+Pada Stark (sender), jalankan perintah berikut dengan IP Receiver adalah IP TurkRegion
  ```
   nc <ip receiver> 8080
  ```
@@ -773,18 +784,35 @@ Selanjutnya pada TurkRegion (Receiver), kita dapat melihat pesan yang dikirim ol
 
  ![receiver](./img/2-receiver.png)
 
-Setelah itu, jalankan perintah 
+Testing selanjutnya adalah testing dengan menjalankan perintah 
  ```
 nmap -sU -p 67  IP-DHCP
  ```
  ```
 nmap -sU -p 8080  IP-DHCP
  ```
-Ubah IP DHCP dengan IP TurkRegion,sehingga diperoleh sebagai berikut:
 
+ Perintah nmap `-sU -p [port] IP-DHCP` menggunakan Nmap, sebuah alat pemindaian jaringan, untuk melakukan pemindaian UDP pada port 67 terhadap alamat IP yang ditentukan (diwakili oleh IP-DHCP). Berikut adalah detail dari komponen perintah: <br />
+`nmap`: Ini adalah panggilan untuk Nmap, sebuah alat pemindaian jaringan yang kuat digunakan untuk menemukan host dan layanan pada jaringan komputer. <br />
+
+`-sU`: Opsi ini memberitahu Nmap untuk melakukan pemindaian UDP. Pemindaian UDP digunakan untuk mengidentifikasi port UDP terbuka pada host target.
+
+`-p 67`: Opsi ini membatasi pemindaian ke port 67 saja. Port 67 adalah port yang digunakan oleh layanan protokol konfigurasi host dinamis (DHCP) untuk komunikasi server ke klien.
+
+`-p 8080`: Opsi ini memfokuskan pemindaian pada port 8080 saja.
+
+Berikut ini adalah hasil testing untuk nmap `-sU -p 67  IP-DHCP`
 ![nmap](./img/2-nmap1.png)
 
+Dapat dilihat bahwa: <br />
+ `State: open|filtered` – Status ini menunjukkan bahwa port 67 UDP pada host tersebut terbuka atau difilter. Nmap tidak dapat menentukan dengan pasti apakah port benar-benar terbuka atau difilter oleh firewall karena tidak ada respon untuk paket UDP (ini adalah sifat pemindaian UDP). <br />
+
+`Service`: dhcps – Ini menunjukkan bahwa port 67 yang dipindai dikenal digunakan untuk layanan DHCP server.
+
+Berikut ini adalah hasil testing untuk nmap `-sU -p 8080  IP-DHCP`
 ![nmap](./img/2-nmap2.png)
+
+Dalam output Nmap tersebut, port 8080 pada host dengan alamat IP 192.180.0.3 telah dipindai menggunakan protokol UDP. Hasilnya menunjukkan bahwa port ini dalam keadaan `open|filtered` yang berarti Nmap tidak bisa menentukan dengan pasti apakah port tersebut terbuka atau difilter oleh firewall karena tidak ada respon untuk paket UDP yang dikirim. Tidak ada layanan yang dikenali terkait dengan port ini, sehingga ditandai sebagai "unknown". Host tersebut aktif, dan pemindaian selesai dalam waktu 13.66 detik.
 
 ### Jawaban Soal 3
 > Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
@@ -796,22 +824,48 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ```
 iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
  ```
+
+ Aturan iptables pertama `iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT` digunakan untuk mengizinkan semua paket masuk yang merupakan bagian dari atau terkait dengan koneksi yang sudah ada atau sudah diatur sebelumnya. `ESTABLISHED` berarti paket adalah bagian dari sesi yang sudah ada, dan `RELATED` berarti paket tersebut dikaitkan dengan sesi yang sudah ada. Ini memastikan bahwa trafik masuk seperti respons HTTP atau FTP data transfer yang sudah dimulai dapat melanjutkan tanpa terblokir.
+
+Aturan iptables kedua `iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP` digunakan untuk membatasi jumlah koneksi ICMP (seperti ping requests) yang bisa dibuat ke host. Aturan ini memblokir semua koneksi ICMP yang melebihi tiga koneksi simultan. `--connlimit-mask 0` berarti pembatasan ini diterapkan secara global tanpa mempertimbangkan alamat IP asal. 
+
 #### 3.2. Testing
 Untuk testing, lakukan ping ke IP Revolte (DHCP Server) atau IP Richter (DNS Server) ke-4 node yang berbeda, untuk memastikan bahwa hanya maksimal 3 device yang dapat mengakses secara bersamaan.
 
 Sebagai contoh, saya akan melakukan ping ke IP Revolte (DHCP Server) dengan IP 192.180.14.146 ke beberapa node berikut:
-1. GrobeForest (Client)
+1. GrobeForest (Client) <br/>
     
     ![client](./img/3-client.png)
+    
+    <br />
+2. Sein (Web Server) <br/>
 
-2. Sein (Web Server)
     ![server](./img/3-server.png)
+    
+    <br />
 
-3. Himmel (Router)
+3. Himmel (Router) <br/>
     ![router](./img/3-router.png)
-
-4. LaubHills (client)
+     <br/>
+4. LaubHills (client)  <br/>
     ![client](./img/3-client2.png)
+
+Dapat dilihat bahwa pada node keempat (LaubHills), paket tidak dapat diterima, sedangkan pada ketiga node lainnya paket tetap berjalan.
+
+
+Selanjutnya saya akan melakukan ping ke IP Richter (DNS Server) dengan IP 192.180.14.150 ke beberapa node berikut:
+1. GrobeForest (Client) <br/>
+    
+    ![client v2](./img/3-clientv2.png)
+
+2. Sein (Web Server)<br/>
+    ![server v2](./img/3-serverv2.png)
+
+3. Himmel (Router)<br/>
+    ![router v2](./img/3-routerv2.png)
+
+4. LaubHills (client)<br/>
+    ![client2 v2](./img/3-client2v2.png)
 
 Dapat dilihat bahwa pada node keempat (LaubHills), paket tidak dapat diterima, sedangkan pada ketiga node lainnya paket tetap berjalan.
 
@@ -844,10 +898,17 @@ iptables -A INPUT -p tcp --dport 22 -j REJECT
 ```
 ![run](./img/4-run.png)
 
+`iptables -A INPUT -p tcp --dport 22 -s 192.180.8.0/22 -j ACCEPT`: Perintah ini menambahkan aturan pada akhir (append) rantai INPUT untuk menerima (ACCEPT) paket-paket TCP yang datang ke port 22 (SSH) dari alamat IP dalam rentang 192.180.8.0 hingga 192.180.11.255 (yang ditentukan oleh  VLSM 192.180.8.0/22).
+
+<br />
+`iptables -A INPUT -p tcp --dport 22 -j REJECT`: Perintah ini menambahkan aturan pada akhir rantai INPUT yang akan menolak (REJECT) semua paket-paket TCP lainnya yang datang ke port 22. Karena aturan ini ditempatkan setelah aturan pertama, ini hanya akan diterapkan pada paket-paket yang tidak cocok dengan rentang IP yang diberikan dalam aturan pertama.
+
 Kemudian jalankan perintah
 ```
 iptables -L
 ```
+
+Perintah `iptables -L` digunakan untuk menampilkan semua aturan filter yang saat ini aktif dalam rantai-rantai (`chains`) dari tabel filter iptables. Secara default, perintah ini akan menunjukkan aturan-aturan pada tiga rantai standar: INPUT, FORWARD, dan OUTPUT, beserta dengan kebijakan (`policy`) yang terkait, seperti ACCEPT atau DROP. <br />
 Diperoleh hasil sebagai berikut:
 
 ![result](./img/4-result.png)
@@ -866,6 +927,11 @@ Perintah iptables -L, bertujuan utnuk menampilkan daftar aturan yang saat ini ak
 - Chain OUTPUT (policy ACCEPT) <br />
     Ini mengontrol paket yang keluar dari server. Kebijakan bawaan adalah "ACCEPT", yang memungkinkan semua paket keluar kecuali ada aturan yang secara eksplisit melarangnya.
 
+Selanjutnya kita akan melakukan testing di Sein (subnet A3), diperoleh hasil sebagai berikut:
+
+![result2](./img/4-result2.png)
+
+Dapat dilihat bahwa diperoleh hasil yang sama seperti pada iptables -L pada server Stark.
 
 ### Jawaban Soal 5
 > Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
@@ -877,9 +943,12 @@ iptables -A INPUT -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,
 ```
 iptables -A INPUT -j REJECT
 ```
+`iptables -A INPUT -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri -j ACCEPT`: Aturan ini menambahkan (append) ke rantai INPUT aturan yang mengizinkan (ACCEPT) paket-paket masuk berdasarkan waktu tertentu. Paket-paket akan diterima hanya pada jam kerja yaitu antara pukul 08:00 hingga 16:00 dan hanya pada hari kerja dari Senin hingga Jumat. <br />
+
+`iptables -A INPUT -j REJECT`: Aturan ini menambahkan ke rantai INPUT kebijakan untuk menolak (REJECT) semua paket masuk lainnya yang tidak cocok dengan aturan yang ada di atasnya. Ini secara efektif akan menolak semua koneksi masuk yang tidak sesuai dengan jadwal waktu yang ditentukan pada aturan pertama. <br />
 
 #### 5.2. Testing
-Sebagai contoh, saya melakukan testing pada webServer Sein, sehingga kita menjalankan:
+Untuk testing, kita harus melakukan konfigurasi pada webServer Sein dan Stark, sehingga kita menjalankan:
 ```
 iptables -A INPUT -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri -j ACCEPT
 ```
@@ -887,6 +956,8 @@ iptables -A INPUT -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,
 iptables -A INPUT -j REJECT
 ```
 ![run](./img/5-run.png)
+
+![run2](./img/5-run2.png)
 
 Kemudian kita lakukan testing pada node lain, misalnya pada Client SchewerMountain. Kita akan melakukan 2 skenario testing, sebagai berikut:
 - Testing pada di dalam jam kerja <br />
@@ -899,6 +970,10 @@ Kemudian kita lakukan testing pada node lain, misalnya pada Client SchewerMounta
     Kemudian lakukan ping ke node webserver yang telah dikonfigurasi, yaitu Sein pada client. Sein memiliki IP 192.180.8.2.
 
     ![result1](./img/5-result0.png)
+
+    Selanjutnya kita coba juga untuk ping ke webserver Stark dengan IP 192.180.14.138
+
+    ![result1v2](./img/5-result-weekdayv2.png)
 
     Dapat dilihat bahwa ping berhasil dilakukan pada jam kerja
 
@@ -913,6 +988,10 @@ Kemudian kita lakukan testing pada node lain, misalnya pada Client SchewerMounta
 
     ![result2](./img/5-result2.png)
 
+    Selanjutnya kita coba juga untuk ping ke webserver Stark dengan IP 192.180.14.138
+
+    ![result2](./img/5-result0v2.png)
+
     Dapat dilihat bahwa ping tidak berhasil dilakukan pada saat diluar jam kerja.
 
 ### Jawaban Soal 6
@@ -925,8 +1004,13 @@ iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,
 ```
 iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT
 ```
+
+`iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT`: Aturan ini menambahkan sebuah kebijakan ke rantai INPUT yang akan menolak semua paket masuk (`REJECT`) pada jam istirahat makan siang dari pukul 12:00 hingga 13:00 pada hari Senin, Selasa, Rabu, dan Kamis. Aturan ini dimaksudkan untuk memblokir koneksi masuk selama periode waktu tertentu di hari kerja tertentu. <br />
+
+`iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT`: Aturan ini mirip dengan yang pertama, tetapi khusus untuk hari Jumat dan menolak paket masuk dalam rentang waktu yang lebih panjang, dari pukul 11:00 hingga 13:00. Ini bisa direpresentasikan sebagai aturan untuk memperpanjang periode waktu di mana koneksi masuk tidak diizinkan pada hari Jumat karena masih jumatan.
+
 #### 6.2. Testing
-Karena soal nomor 6 berhubungan dengan soal nomor 5, saya melakukan testing pada webServer Sein, sehingga kita menjalankan:
+Karena soal nomor 6 berhubungan dengan soal nomor 5, saya melakukan testing pada webServer Sein dan juga Stark, sehingga kita menjalankan:
 ```
 iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT
 ```
@@ -935,10 +1019,9 @@ iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j R
 ```
 ![run](./img/6-run.png)
 
-Kemudian kita lakukan testing pada node lain, misalnya pada Client LaubHills. Kita akan melakukan 5 skenario testing, sebagai berikut:
-- Testing <br />
-Senin jam 09.30 
-bisa
+Kemudian kita lakukan testing pada node lain. Kita akan melakukan 5 skenario testing, sebagai berikut:
+- Testing saat jam kerja<br />
+    Sebagai contoh kita testing untuk Senin jam 09.30, maka kita set sebagai berikut:
     ```
     date --set="2023-12-11 09:30:00"
     ```
@@ -948,57 +1031,90 @@ bisa
 
     ![test1](./img/6-test1.png)
 
-- Testing <br />
-Senin jam 12.30 
-gabisa
+    Kita lakukan hal yang sama juga untuk server Stark dengan IP 192.180.14.138
 
+    ![test2](./img/6-test1v2.png)
+
+    Dapat dilihat bahwa dari Stark maupun Sein, keduanya dapat diakses saat jam kerja
+
+- Testing saat jam istirahat<br />
+    Sebagai contoh kita testing untuk Senin jam 12.30, maka kita set sebagai berikut:
     ```
     date --set="2023-12-11 12:30:00"
     ```
 
     ![date2](./img/6-date2.png)
 
+    Kemudian lakukan ping ke node webserver yang telah dikonfigurasi, yaitu Sein pada client. Sein memiliki IP 192.180.8.2. <br />
     ![test2](./img/6-test2.png)
 
+     Kita lakukan hal yang sama juga untuk server Stark dengan IP 192.180.14.138
 
-- Testing <br />
-Jumat jam 12.00 
-gabisa
+    ![test2v2](./img/6-test2v2.png)
+
+    Dapat dilihat bahwa kedua server tidak dapat diakses pada saat jam istirahat.
+
+- Testing saat jam jumatan <br />
+    Sebagai contoh kita testing untuk Jumat jam 12.00, maka kita set sebagai berikut:
+
     ```
     date --set="2023-12-15 12:00:00"
     ```
     ![date3](./img/6-date3.png)
 
+    Kemudian lakukan ping ke node webserver yang telah dikonfigurasi, yaitu Sein pada client. Sein memiliki IP 192.180.8.2. <br />
     ![test3](./img/6-test3.png)
 
-- Testing <br />
-Jumat jam 13.02 
-bisa
-  ```
+    Kita lakukan hal yang sama juga untuk server Stark dengan IP 192.180.14.138.
+    ![test3v2](./img/6-test3v2.png)
+
+    Dapat dilihat bahwa kedua server tidak dapat diakses pada saat jam jumatan.
+
+- Testing setelah jumatan<br />
+    Sebagai contoh kita testing untuk Jumat jam 13.02, maka kita set sebagai berikut:
+
+    ```
     date --set="2023-12-15 13:02:00"
     ```
-![date4](./img/6-date4.png)
+    ![date4](./img/6-date4.png)
 
-![test4](./img/6-test4.png)
+    Kemudian lakukan ping ke node webserver yang telah dikonfigurasi, yaitu Sein pada client. Sein memiliki IP 192.180.8.2. <br />
 
-- Testing <br />
-Sabtu jam 23.00 
-gabisa
-  ```
+    ![test4](./img/6-test4.png)
+
+    Kita lakukan hal yang sama juga untuk server Stark dengan IP 192.180.14.138.
+
+    ![test4v2](./img/6-test4v2.png)
+
+    Dapat dilihat bahwa kedua server  dapat diakses setelah jam jumatan.
+
+- Testing diluar jam kerja<br />
+    Sebagai contoh kita testing untuk Sabtu jam 23.00, maka kita set sebagai berikut:
+
+    ```
     date --set="2023-12-16 23:00:00"
     ```
 
     ![date5](./img/6-date5.png)
 
+    Kemudian lakukan ping ke node webserver yang telah dikonfigurasi, yaitu Sein pada client. Sein memiliki IP 192.180.8.2. <br />
+
     ![test5](./img/6-test5.png)
+
+    Kita lakukan hal yang sama juga untuk server Stark dengan IP 192.180.14.138.
+
+    ![test5v2](./img/6-test5v2.png)
+    
+    Dapat dilihat bahwa kedua server tidak dapat diakses pada diluar jam kerja.
 
 ### Jawaban Soal 7
 > Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
 #### 7.1. Solusi 
-Sein -> 80
-Stark -> 443
-
-Jalankan pada router yang menghubungkan kedua webserver
+Sebelum memulai kita harus melakukan instalisasi pada semua node yang bersangkutan, karena akan digunakan untuk testing.
+```
+apt install netcat
+```
+Untuk soal ini, kita harus menjalankan kode berikut pada router yang menghubungkan kedua webserver (dapat berupa Heiter, Aura, Frieren). Hal ini dikarenakan agar distribusi urutan akses dapat bergantian dari Sein dan Stark.
  ```
 iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.180.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.180.8.2
 
@@ -1009,44 +1125,374 @@ iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.180.14.138 -m statistic 
 iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.180.14.138 -j DNAT --to-destination 192.180.8.2
  ```
 
+Kode iptables di atas bertujuan untuk melakukan load balancing sederhana menggunakan NAT dan DNAT untuk mendistribusikan koneksi yang masuk secara bergantian antara dua server berdasarkan jumlah paket yang diterima.
+
+Aturan pertama memodifikasi paket yang ditujukan ke IP 192.180.8.2 (Sein) pada port 80 (HTTP) dan menggunakan modul statistik untuk menerapkan NAT pada setiap paket kedua (--every 2) dimulai dengan paket pertama (--packet 0). Aturan ini akan meneruskan setiap paket kedua ke IP yang sama, 192.180.8.2 (Sein). 
+
+Aturan kedua memodifikasi semua paket TCP yang ditujukan ke port 80 pada IP 192.180.8.2 (Sein) dan meneruskan mereka ke IP 192.180.14.138 (Stark). Aturan ini tidak menggunakan statistik dan akan berlaku untuk setiap paket yang tidak dihitung oleh aturan pertama, efektif mengirimkan setiap paket kedua ke IP yang berbeda.
+
+Aturan ketiga mirip dengan aturan pertama tetapi berlaku untuk koneksi yang datang ke IP 192.180.14.138 (Stark) pada port 443 (HTTPS). Ini menggunakan modul statistik untuk meneruskan setiap paket kedua yang diterima ke IP yang sama, 192.180.14.138 (Stark).
+
+Aturan keempat memodifikasi paket yang ditujukan ke port 443 pada IP 192.180.14.138 (Stark) dan meneruskan mereka ke IP 192.180.8.2 (Sein). Ini akan berlaku untuk paket yang tidak dihitung oleh aturan ketiga, efektif mengirimkan setiap paket kedua ke IP yang berbeda.
 #### 7.2. Testing
-Misal jalankan pada Heiter
+Untuk contoh testing, saya akan mencoba menjalankan di router Heiter. Sebelumnya kita harus melakukan perintah berikut pada Heiter, Sein, Stark, dan client yang dipilih untuk testing (misal TurkRegion):
+```
+apt install netcat
+```
+
+Selanjutnya, pada router (Heiter), jalankan perintah berikut untuk menentukan prerouting:
+
+ ```
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.180.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.180.8.2
+
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.180.8.2 -j DNAT --to-destination 192.180.14.138
+
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.180.14.138 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.180.14.138
+
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.180.14.138 -j DNAT --to-destination 192.180.8.2
+ ```
 ![run](./img/7-run.png)
 
-Jalankan iptables -t nat -L PREROUTING --line-numbers -v di heiter
+Untuk mengecek preorouting yang sudah di configure, jalankan perintahini di router (heiter)
+
+ ```
+ iptables -t nat -L PREROUTING --line-numbers -v 
+  ```
 ![iptables](./img/7-iptables.png)
 
-- Untuk port 80 (sein)
-    - di sein
-    while true; do nc -l -p 80 -c 'echo "it's sein"'; done
-    
-    - di stark
-        while true; do nc -l -p 80 -c 'echo "it's stark"'; done
 
-    - di client (Turk Region)
+Perintah iptables `-t nat -L PREROUTING --line-numbers -v` digunakan untuk menampilkan daftar aturan yang ada dalam rantai PREROUTING dari tabel nat di iptables, lengkap dengan detail tambahan dan nomor baris. Dapat dilihat bahwa dari
+
+Selanjutnya untuk testing, kita akan menjalankan 2 skenario, sebagai berikut:
+- Untuk port 80 (sein) <br />
+    Pada Sein, jalankan perintah berikut:
+     ```
+    while true; do nc -l -p 80 -c "echo \"it's sein\""; done
+     ```
+
+    ![run sein](./img/7-run80-sein.png)
+    Perintah `while true; do nc -l -p 80 -c "echo \"it's sein\""; done` merupakan sebuah loop tak terbatas dalam shell yang menjalankan Netcat (nc) untuk mendengarkan pada port 80 dan menjalankan perintah tertentu ketika ada koneksi yang masuk.
+
+    Pada Stark, jalankan perintah berikut:
+    ```
+    while true; do nc -l -p 80 -c "echo \"it's stark\""; done
+    ```
+
+    ![run stark](./img/7-run80-stark.png)
+
+    Perintah di atas, sama dengan sebelumnya, hanya saja perintah ini digunakan untuk menandakan bahwa ketika dijalankan berasal dari Stark.
+
+    Selanjutnya, di client (Turk Region), kita coba panggil dengan perintah ini beberapa kali:
+    ```
     nc 192.180.8.2 80
+    ```
+    ![result80](./img/7-result80.png)
 
-- Untuk port 443 (stark)
-    - di sein
-    while true; do nc -l -p 443 -c 'echo "it's sein"'; done
-    
-    - di stark
-        while true; do nc -l -p 443 -c 'echo "it's stark"'; done
+    Dapat dilihat diperoleh hasil yang bergantian antara sein dan stark saat melakukan ping ke IP Sein melalui port 80. 
 
-    - di client (Turk Region)
-    nc 192.180.14.138
+- Untuk port 443 (stark) <br />
+  Pada Sein, jalankan perintah berikut:
+     ```
+    while true; do nc -l -p 443 -c "echo \"it's sein\""; done
+     ```
+
+     ![run sein](./img/7-run443-sein.png) <br />
+    Perintah `while true; do nc -l -p 80 -c "echo \"it's sein\""; done` efektif membuat server sederhana yang mendengarkan pada port 443 dan untuk setiap koneksi yang masuk, ia mengirimkan pesan "it's sein" ke klien. Setelah mengirim pesan, `netcat` akan menutup koneksi dan skrip akan memulai `netcat` lagi untuk mendengarkan koneksi baru. Ini terus berlanjut selama skrip berjalan.
+     
+    Pada Stark, jalankan perintah berikut:
+    ```
+    while true; do nc -l -p 443 -c "echo \"it's stark\""; done
+    ```
+
+    ![run stark](./img/7-run443-stark.png)
+    Perintah di atas, sama dengan sebelumnya, hanya saja perintah ini digunakan untuk menandakan bahwa ketika dijalankan berasal dari Stark.
+
+    Selanjutnya, di client (Turk Region), kita coba panggil dengan perintah ini beberapa kali:
+    ```
+    nc 192.180.14.138 443
+    ```
+
+    ![result443](./img/7-result443.png) <br />
+    Dapat dilihat diperoleh hasil yang bergantian antara sein dan stark saat melakukan ping ke IP Stark melalui port 443. 
 
 ### Jawaban Soal 8
 > Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
 #### 8.1. Solusi 
-#### 8.2. Testing
+Masa pemilu Indonesia 2024 diadakan pada 14 Februari 2024 - 26 Juni 2024.
 
+Berdasarkan map topologi, Revolte berada di dalam subnet A8
+
+![map](./img/ip-map.png)
+
+<br />
+
+Hal ini berarti hanya Revolte dan Fern eth1 yang tidak dapat mengakses webserver hingga masa pemilu berakhir.
+
+Untuk melakukan ini kita melakukan perintah sebagai berikut pada webserver (Sein dan Stark):
+```
+A8_Subnet="192.180.14.144/30"
+
+Pemilu_Start=$(date -d "2024-02-14T00:00" +"%Y-%m-%dT%H:%M")
+
+Pemilu_End=$(date -d "2024-06-26T23:59" +"%Y-%m-%dT%H:%M")
+
+iptables -A INPUT -s $A8_Subnet -m time --datestart $Pemilu_Start --datestop $Pemilu_End -j REJECT
+```
+Kode ini menggunakan iptables untuk mengatur aturan keamanan jaringan berbasis waktu. Berikut penjelasan dari setiap barisnya:
+
+1. `A8_Subnet="192.180.14.144/30"`:
+   - Ini mendefinisikan variabel `A8_Subnet` dengan nilai sebuah subnet IP (subnet Revolte berada), dalam hal ini adalah "192.180.14.144/30". Notasi "/30" menandakan mask subnet yang digunakan, yang mencakup beberapa alamat IP dalam rentang tersebut.
+
+2. `Pemilu_Start=$(date -d "2024-02-14T00:00" +"%Y-%m-%dT%H:%M")`:
+   - Baris ini menetapkan variabel `Pemilu_Start` dengan tanggal dan waktu mulai yang ditentukan, dalam format tahun-bulan-tanggalTjam:menit. Ini menggunakan perintah `date` untuk mengonversi string waktu "2024-02-14T00:00" ke format yang sesuai.
+
+3. `Pemilu_End=$(date -d "2024-06-26T23:59" +"%Y-%m-%dT%H:%M")`:
+   - Sama seperti `Pemilu_Start`, baris ini menetapkan variabel `Pemilu_End` dengan tanggal dan waktu berakhirnya periode yang ditentukan, menggunakan format yang sama.
+
+4. `iptables -A INPUT -s $A8_Subnet -m time --datestart $Pemilu_Start --datestop $Pemilu_End -j REJECT`:
+   - Ini adalah perintah iptables yang sebenarnya. Perintah ini menambahkan (`-A`) aturan ke rantai INPUT. Aturan ini berlaku untuk paket yang berasal dari subnet yang ditentukan dalam `A8_Subnet`.
+   - `-m time --datestart $Pemilu_Start --datestop $Pemilu_End` menggunakan modul waktu (`-m time`) untuk menetapkan aturan ini hanya aktif antara waktu mulai `Pemilu_Start` dan waktu berakhir `Pemilu_End`.
+   - `-j REJECT` menentukan bahwa paket yang cocok dengan kriteria di atas harus ditolak.
+
+Secara keseluruhan, aturan ini akan menolak semua paket masuk dari subnet 192.180.14.144/30 selama periode waktu dari tengah malam 14 Februari 2024 hingga 23:59 pada 26 Juni 2024.
+
+#### 8.2. Testing
+Untuk melakukan testing, pertama-tama kita harus menjalankan perintah berikut pada Sein dan Stark:
+```
+A8_Subnet="192.180.14.144/30"
+
+Pemilu_Start=$(date -d "2024-02-14T00:00" +"%Y-%m-%dT%H:%M")
+
+Pemilu_End=$(date -d "2024-06-26T23:59" +"%Y-%m-%dT%H:%M")
+
+iptables -A INPUT -s $A8_Subnet -m time --datestart $Pemilu_Start --datestop $Pemilu_End -j REJECT
+```
+
+Selanjutnya kita cek list iptables yang ada dengan menggunakan perintah sebagai berikut:
+```
+iptables -L
+```
+Diperoleh hasil sebagai berikut:
+ - iptables pada Sein
+![sein](./img/8-sein-iptables.png)
+ - iptables pada Stark
+ ![stark](./img/8-stark-iptables.png)
+
+Dari hasil kedua iptables tersebut dapat dilihat bahwa terdapat aturan firewall yang sedang aktif. Pada aturan ini menargetkan protokol all (semua protokol), dari sumber 192-180-014-144.res.spectrum.com/30 (yang merupakan representasi subnet A8 dengan netmask length /30).
+
+Untuk skenario testing akan dijalankan sebagai berikut:
+- Ping pada Revolte dengan tanggal hari ini
+    - ping ke Sein <br />
+        ![sein](./img/8-test1-sein.png)
+    - ping ke Stark
+        ![stark](./img/8-test1-stark.png)
+    Dari kedua hasil tersebut dapat dilihat bahwa Revolte dapat mengakses ke server Sein maupun Stark. Hal ini dikarenakan pada masa sekarang (Sun Dec 24), pemilu masih belum dimulai.
+- Ping pada Revolte dengan tanggal 13 Februari 2024 (sebelum Pemilu dimulai)
+    ```
+    date --set="2024-02-13"
+    ```
+     - ping ke sein <br />
+        ![sein](./img/8-test2-sein.png)
+    - ping ke stark
+        ![stark](./img/8-test2-stark.png)
+    Dari kedua hasil tersebut dapat dilihat bahwa Revolte dapat mengakses ke server Sein maupun Stark. Hal ini dikarenakan pada tanggal 13 Februari 2024, pemilu masih belum dimulai, sehingga akses Revolte ke webserver masih dapat dilakukan.
+- Ping pada Revolte dengan tanggal 15 Februari 2024 (masa Pemilu)
+   ```
+    date --set="2024-02-15"
+    ```
+    - ping ke sein <br />
+        ![sein](./img/8-test3-sein.png)
+    - ping ke stark
+        ![stark](./img/8-test3-stark.png)
+    Dari kedua hasil tersebut dapat dilihat bahwa Revolte tidak dapat mengakses ke server Sein maupun Stark. Hal ini dikarenakan pada tanggal 15 Februari 2024, pemilu sudah berlangsung dimulai, sehingga akses Revolte ke webserver tidak dapat dilakukan.
+- Ping selain node Revolte (misal GrobeForest) dengan tanggal 16 Februari 2024
+   ```
+    date --set="2024-02-16"
+    ```
+    - ping ke sein <br />
+        ![sein](./img/8-test4-sein.png)
+    - ping ke stark
+        ![stark](./img/8-test4-stark.png)
+    Dari kedua hasil tersebut, dapat dilihat bahwa node GrobeForest yang berada di luar subnet A8, dapat megnakses webserver pada masa pemilu berlangsung.
 ### Jawaban Soal 9
-> Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir  alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. 
+> Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir  alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. (clue: test dengan nmap)
 #### 9.1. Solusi 
+Untuk melakukan pemblokiran alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit, kita dapat menggunakan kode berikut, yang diterapkan pada webserver (sein dan stark):
+```
+# Membuat aturan untuk melacak upaya pemindaian port
+iptables -A INPUT -p tcp -m recent --name portscan --rcheck --seconds 600 --hitcount 20 -j DROP
+
+# Menambahkan alamat IP ke daftar pelacak jika mencoba memindai port
+iptables -A INPUT -p tcp -m recent --name portscan --set -j ACCEPT
+```
+
+Aturan pertama menggunakan `-m recent` untuk memeriksa apakah alamat IP tertentu telah mencoba membuat koneksi lebih dari 20 kali `(--hitcount 20)` dalam 600 detik (10 menit)terakhir `(--seconds 600)`. Jika kondisi ini terpenuhi, maka trafik dari alamat IP tersebut akan di-DROP.
+
+Aturan kedua menambahkan alamat IP yang melakukan koneksi TCP ke daftar pemantauan recent dengan nama portscan. Setiap upaya koneksi akan dicatat.
+
 #### 9.2. Testing
+Setelah menjalankan perintah berikut pada webserver (Sein dan Stark), kita dapat menjalankan perintah:
+
+```
+iptables -L
+```
+
+Diperoleh hasil sebagai berikut:
+- Sein
+    ![sein](./img/9-sein-iptables.png)
+- Stark
+    ![stark](./img/9-stark-iptables.png)
+
+Dari kedua hasil  iptables -L tersebut dapat terlihat terdapat aturan untuk melakukan drop jika scan lebih dari 20 dalam waktu 600 detik.
+
+ Untuk bagian ini akan dilakukan 2 skenario testing, sebagai berikut:
+ - Scan 10 port<br />
+    - menuju Sein<br />
+        Untuk testing 10 port, dijalankan perintah berikut:
+        ```
+        nmap -p 1-10 192.180.8.2
+        ```    
+        Diperoleh hasil sebagai berikut:
+        ![sein](./img/9-result1-sein.png)
+
+        Host 192.180.8.2 direspons dan aktif (Host is up), dengan latensi 0.00082 detik.
+        Semua port dari 1 hingga 10 ditandai sebagai filtered. Status "filtered" menunjukkan bahwa Nmap tidak dapat menentukan apakah port terbuka atau tertutup karena ada jenis pemfilteran - seperti firewall - yang mencegah Nmap mencapai port.
+        Layanan untuk setiap port tidak dapat diidentifikasi dengan pasti, yang ditunjukkan dengan label unknown untuk beberapa port, sedangkan lainnya memiliki nama layanan yang diasumsikan berdasarkan nomor port standar.
+    - menuju Stark<br />
+        Untuk testing 10 port, dijalankan perintah berikut:
+        ```
+        nmap -p 1-10 192.180.14.138
+        ```    
+        Diperoleh hasil sebagai berikut:
+        ![stark](./img/9-result1-stark.png)
+
+ - Scan 30 port<br />
+    - menuju Sein <br />
+        Untuk testing 30 port, dijalankan perintah berikut:
+        ```
+        nmap -p 1-30 192.180.8.2
+        ```    
+
+        Diperoleh hasil sebagai berikut:
+        ![sein](./img/9-result2-sein.png)
+
+        Host masih responsif dengan latensi yang sangat rendah (0.00059 detik). Semua 30 port yang dipindai ditandai sebagai filtered. Ini menunjukkan adanya firewall atau jenis pemfilteran lain yang mencegah Nmap dari menentukan status port.
+         
+    - menuju Stark<br />
+      Untuk testing 30 port, dijalankan perintah berikut:
+        ```
+        nmap -p 1-30 192.180.14.138
+        ```    
+
+        Diperoleh hasil sebagai berikut:
+
+        ![stark](./img/9-result2-stark.png)
+<br />
+        Scan Nmap berhasil mendeteksi host 192.180.14.138 (stark). Namun, semua port yang dipindai (1-30) terfilter. Hal ini kemungkinan disebabkan oleh firewall atau perangkat keamanan lainnya.
 
 ### Jawaban Soal 10
 > Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level. 
 #### 10.1. Solusi 
+Untuk soal ini, kita akan melakukan konfigurasi disetiap node server dan router, yakni pada node:
+- Server
+    - Sein (webserver)
+    - Stark (webserver)
+    - Richter (DNS server)
+    - Revolte (DHCP server)
+- Router
+    - Aura
+    - Heiter
+    - Frieren
+    - Himmel
+    - Fern
+
+
+Konfigurasi yang digunakan adalah sebagai berikut:
+```
+#!/bin/bash
+
+# Step 1: Create Log File
+touch /var/log/iptables.log
+
+# Step 2: Configure iptables for Logging
+# Create a new chain called LOGGING
+iptables -N LOGGING
+
+# Direct incoming and forwarding traffic to the LOGGING chain
+iptables -A INPUT -j LOGGING
+iptables -A FORWARD -j LOGGING
+
+# Log the details of packets that reach the LOGGING chain
+# Remove the limit to log all packets
+iptables -A LOGGING -j LOG --log-prefix "IPTables-Dropped: " --log-level 4
+
+# Drop the packets after logging
+iptables -A LOGGING -j DROP
+
+# Step 3: Configure Syslog to Store iptables Logs
+# Add configuration to syslog
+# Make sure this line only appears once in the rsyslog configuration file
+echo ':msg,contains,"IPTables-Dropped: " /var/log/iptables.log' > /etc/rsyslog.d/iptables.conf
+echo '& stop' >> /etc/rsyslog.d/iptables.conf
+
+# Step 4: Restart Syslog Service
+# Use systemctl if your system uses systemd
+service rsyslog restart
+
+# Optional: Print a message indicating completion
+echo "Iptables logging setup complete."
+```
+
+Skrip ini mengatur konfigurasi iptables untuk mencatat paket yang di-drop dan menyimpan log tersebut menggunakan rsyslog pada sistem Linux:
+
+1. **Membuat File Log**: Skrip ini membuat file log di `/var/log/iptables.log` untuk menyimpan catatan iptables.
+
+2. **Konfigurasi iptables**: Skrip membuat chain baru dalam iptables bernama `LOGGING`. Semua trafik masuk dan yang diteruskan diarahkan ke chain ini. Di dalam chain `LOGGING`, skrip menetapkan aturan untuk mencatat detail paket yang di-drop dengan label "IPTables-Dropped: ".
+
+3. **Mendrop Paket Setelah Logging**: Setelah mencatat, paket di-drop atau ditolak agar tidak diproses lebih lanjut oleh sistem.
+
+4. **Konfigurasi rsyslog**: Skrip kemudian mengatur rsyslog untuk menyimpan log yang berisi label "IPTables-Dropped: " ke file `/var/log/iptables.log`. Ini dilakukan dengan menambahkan konfigurasi ke file `/etc/rsyslog.d/iptables.conf`.
+
+5. **Restart Layanan rsyslog**: Skrip mengakhiri dengan me-restart layanan rsyslog agar perubahan konfigurasi mulai berlaku.
+
+6. **Pesan Penyelesaian**: Terakhir, skrip mencetak pesan yang menunjukkan selesainya proses setup logging.
+
+Intinya, skrip ini digunakan untuk mencatat semua aktivitas jaringan yang dianggap tidak sah atau mencurigakan (yaitu paket yang di-drop) dan menyimpan catatan tersebut untuk analisis lebih lanjut.
 #### 10.2. Testing
+Untuk skenario testing akan dijalankan skenario sebagai berikut:
+- Mengakses web server di luar jam kerja <br />
+    Jam kerja adalah pada Senin-Jumat pada pukul 08.00-16.00. Sebagai contoh, saya akan melakukan testing ping ke node Sein dari client GrobeForest. Misalnya saya melakukan set hari pada Sabtu, diperoleh hasil sebagai berikut:
+    ![scene 1](./img/10-result1.png)
+    Dari hasil tersebut terlihat bahwa ping tidak dapat berjalan karena dilakukan pengaksesan di luar jam kerja.
+    - iptables -L
+        ![iptables](./img/10-iptables1.png)
+        Dapat dilihat bahwa pada iptables terdapat aturan yang mengatur untuk akses di luar jam kerja, dan juga aturan untuk logging.
+    - file log <br />
+        Untuk file log, saya akan menunjukkan hasil pada /var/log/syslog dan /var/log/iptables.log. Berikut ini adalah hasil /var/log/syslog:
+        ![syslog](./img/10-s1-log1.png)
+        Berikut ini adalah hasil /var/log/iptables.log: <br />
+        ![iptables.log](./img/10-s1-log2.png) <br />
+        Dari kedua hasil log tersebut dapat dilihat bahwa tidak terdapat log untuk DROP. Hal ini mungkin dikarenakan pada image Docker yang digunakan (ubuntu), tidak memiliki `syslog.conf`, sehingga sulit untuk mengatur log.
+- Melakukan ping dengan 3 atau lebih client ke dns/dhcp server <br /> 
+    Untuk contoh skenario yang ini, saya akan menjalankan ping ke node Revolte melalui 4 node lain yang berbeda. Berikut ini adalah hasil pingnya:
+    1. node pertama (SchwerMountain)
+        ![1](./img/10-r2.png)
+    2. node kedua (LaubHills)
+        ![2](./img/10-R3.png)
+    3. node ketiga (Stark)
+        ![3](./img/10-r4.png)
+    4. node keempat (GrobeForest)
+        ![4](./img/10-r5.png)
+    Pada node keempat dapat dilihat bahwa ping ke Revolte tidak dapat dilakukan karena maksimal node ping bersamaan adalah 3.
+    - iptables -L
+    ![iptables2](./img/10-iptables2.png) <br />
+    Dapat dilihat bahwa pada iptables terdapat aturan yang mengatur untuk ping lebih dari 3 client  , dan juga aturan untuk logging.
+    - file log <br />
+        Untuk file log, saya akan menunjukkan hasil pada /var/log/syslog dan /var/log/iptables.log. Berikut ini adalah hasil /var/log/syslog:
+        ![syslog](./img/10-logs2v1.png) <br />
+        Berikut ini adalah hasil /var/log/iptables.log: <br />
+        ![iptables.log](./img/10-log2v2.png) <br />
+        Dari kedua hasil log tersebut dapat dilihat bahwa tidak terdapat log untuk DROP. Hal ini mungkin dikarenakan pada image Docker yang digunakan (ubuntu), tidak memiliki `syslog.conf`, sehingga sulit untuk mengatur log.
+
+### Kendala Pengerjaan
+Selama pengerjaan praktikum modul 5, kendala utama saya adalah waktu karena praktikum 5 ini diadakan pada masa UAS dan final projects. Untuk kendala lain dalam pengerjaan soal, saya tidak memiliki kendala pada nomor 1-9, namun pada nomor 10 saya memiliki kendala dalam LOGGING. Hal ini disebabkan karena image docker ubuntu yang diberikan, tidak memiliki `syslog.conf` sehingga sulit untuk mengatur log.
